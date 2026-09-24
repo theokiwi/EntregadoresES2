@@ -1,0 +1,127 @@
+@startuml modelo-conceitual
+title Modelo Conceitual — Entregadores (sem métodos)
+hide methods
+hide circle
+
+class Estabelecimento {
+  id
+  nome
+}
+
+class Unidade {
+  id
+  nome
+  endereco
+  fusoHorario
+}
+
+abstract class Usuario {
+  id
+  email
+  senhaHash
+  perfil : {Entregador, SupervisorLocal, SupervisorGeral}
+  ativo : boolean
+}
+
+class Entregador {
+  nome
+  telefone
+  documento
+  veiculo
+  rendimentoKmLitro : decimal
+}
+
+class Supervisor {
+  nome
+  telefone
+}
+
+class Parametro {
+  id
+  valorCombustivel : decimal
+  custoPorKm : decimal
+  jornadaPadraoHoras : inteiro
+}
+
+class Ponto {
+  id
+  endereco
+  latitude : decimal
+  longitude : decimal
+}
+
+class Roteiro {
+  id
+  data
+  status : {NaoIniciado, EmAndamento, Finalizado}
+  horaInicio
+  horaTermino
+  tempoTotalParado
+  distanciaTotal
+  custoEstimado
+}
+
+class ItemRoteiro {
+  id
+  ordem : inteiro
+  horaChegada
+  horaSaida
+  tempoParado
+  status : {Pendente, AguardandoSaida, Concluido}
+}
+
+class Auditoria {
+  id
+  autorId
+  dataHoraCorrecao
+  entidade
+  campo
+  valorAnterior
+  valorNovo
+  justificativa
+}
+
+Usuario <|-- Entregador
+Usuario <|-- Supervisor
+
+Estabelecimento "1" -- "*" Unidade
+Estabelecimento "1" -- "*" Usuario : escopo
+Unidade "1" -- "*" Entregador
+Unidade "0..1" -- "*" Supervisor : Supervisor local
+Unidade "1" -- "*" Ponto
+Unidade "1" -- "1" Parametro
+Unidade "1" -- "*" Roteiro
+
+Entregador "1" -- "*" Roteiro
+Roteiro "1" -- "*" ItemRoteiro
+Ponto "1" -- "*" ItemRoteiro
+
+Auditoria "*" -- "1" Usuario : autor
+Auditoria "*" -- "0..1" ItemRoteiro : registro corrigido
+
+note bottom of Usuario
+  Extensão ao modelo de dados original
+  (ver ADR-014): unifica autenticação e
+  escopo multi-tenant de Entregador e
+  Supervisor (local/geral discriminados
+  pelo atributo perfil).
+end note
+
+note bottom of ItemRoteiro
+  Extensão ao modelo de dados original
+  (ver ADR-015): separa o Ponto reutilizável
+  (endereço fixo) da visita específica a esse
+  ponto dentro de um Roteiro (horários,
+  tempo parado, ordem).
+end note
+
+note bottom of Estabelecimento
+  Extensão multi-tenant (ver ADR-004).
+end note
+
+note bottom of Unidade
+  Extensão ao modelo de dados original
+  (ver ADR-001).
+end note
+
+@enduml
