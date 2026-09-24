@@ -1,0 +1,18 @@
+@startuml Transversal-casos-de-uso
+left to right direction
+title Transversal — Autenticação (com generalização de atores)
+
+actor Entregador
+actor "Supervisor local" as SupervisorLocal
+actor "Supervisor geral" as SupervisorGeral
+
+SupervisorLocal <|-- SupervisorGeral
+
+rectangle "Sistema — Transversal" {
+  usecase "UC00\nAutenticar-se" as UC00
+}
+
+Entregador -- UC00
+SupervisorLocal -- UC00
+
+@enduml
