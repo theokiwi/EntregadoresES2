@@ -9,8 +9,10 @@ import { CommonModule } from './common/common.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { EntregadoresModule } from './entregadores/entregadores.module';
 import { ParametrosModule } from './parametros/parametros.module';
+import { PedidosModule } from './pedidos/pedidos.module';
 import { PerfisModule } from './perfis/perfis.module';
 import { PontosModule } from './pontos/pontos.module';
+import { RoteirosModule } from './roteiros/roteiros.module';
 import { SupervisoresModule } from './supervisores/supervisores.module';
 import { UnidadesModule } from './unidades/unidades.module';
 
@@ -26,6 +28,8 @@ import { UnidadesModule } from './unidades/unidades.module';
     PerfisModule,
     EntregadoresModule,
     PontosModule,
+    PedidosModule,
+    RoteirosModule,
   ],
   controllers: [AppController],
   providers: [

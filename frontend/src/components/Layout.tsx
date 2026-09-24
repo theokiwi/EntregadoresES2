@@ -3,6 +3,8 @@ import type { Perfil } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
 const LINKS: { to: string; label: string; perfis: Perfil[] }[] = [
+  { to: '/pedidos', label: 'Pedidos', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
+  { to: '/roteiros/montar', label: 'Montar roteiro', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/entregadores', label: 'Entregadores', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/pontos', label: 'Pontos', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/unidades', label: 'Unidades', perfis: ['SUPERVISOR_GERAL'] },

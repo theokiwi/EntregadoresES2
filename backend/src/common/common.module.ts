@@ -3,6 +3,7 @@ import { MailerService } from './mailer/mailer.service';
 import { AuditoriaRepository } from './repositorios/auditoria.repository';
 import { ParametroRepository } from './repositorios/parametro.repository';
 import { PontoRepository } from './repositorios/ponto.repository';
+import { RoteiroRepository } from './repositorios/roteiro.repository';
 import { UnidadeRepository } from './repositorios/unidade.repository';
 import { UsuarioRepository } from './repositorios/usuario.repository';
 import { TenantContextService } from './tenant/tenant-context.service';
@@ -13,6 +14,7 @@ const REPOSITORIOS = [
   ParametroRepository,
   AuditoriaRepository,
   PontoRepository,
+  RoteiroRepository,
 ];
 
 @Global()

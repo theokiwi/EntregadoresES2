@@ -51,3 +51,34 @@ export interface Ponto {
   longitude: string;
   createdAt: string;
 }
+
+export type ItemRoteiroStatus = 'PENDENTE' | 'AGUARDANDO_SAIDA' | 'CONCLUIDO';
+export type RoteiroStatus = 'NAO_INICIADO' | 'EM_ANDAMENTO' | 'FINALIZADO';
+
+export interface ItemRoteiro {
+  id: string;
+  roteiroId: string;
+  pontoId: string;
+  ordem: number;
+  horaChegada: string | null;
+  horaSaida: string | null;
+  tempoParadoMin: number | null;
+  status: ItemRoteiroStatus;
+  ponto: Ponto;
+}
+
+export interface Roteiro {
+  id: string;
+  estabelecimentoId: string;
+  unidadeId: string;
+  entregadorId: string;
+  data: string;
+  status: RoteiroStatus;
+  horaInicio: string | null;
+  horaTermino: string | null;
+  tempoTotalParadoMin: number | null;
+  distanciaTotalKm: string | null;
+  custoEstimado: string | null;
+  itens: ItemRoteiro[];
+  entregador?: UsuarioPublico;
+}
