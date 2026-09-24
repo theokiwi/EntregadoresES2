@@ -3,6 +3,8 @@ import { ProtectedRoute } from './auth/ProtectedRoute';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Painel } from './pages/Painel';
+import { TrilhaDeAuditoria } from './pages/auditoria/TrilhaDeAuditoria';
+import { CorrigirHorario } from './pages/correcoes/CorrigirHorario';
 import { CadastroEntregador } from './pages/entregadores/CadastroEntregador';
 import { CadastroPonto } from './pages/pontos/CadastroPonto';
 import { CadastroUnidade } from './pages/unidades/CadastroUnidade';
@@ -33,6 +35,8 @@ export function App() {
             <Route path="/pontos" element={<CadastroPonto />} />
             <Route path="/pedidos" element={<RegistrarPedido />} />
             <Route path="/roteiros/montar" element={<MontarRoteiro />} />
+            <Route path="/correcoes" element={<CorrigirHorario />} />
+            <Route path="/auditoria" element={<TrilhaDeAuditoria />} />
           </Route>
         </Route>
       </Route>
