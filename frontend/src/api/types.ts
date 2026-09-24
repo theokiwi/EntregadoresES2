@@ -82,3 +82,21 @@ export interface Roteiro {
   itens: ItemRoteiro[];
   entregador?: UsuarioPublico;
 }
+
+export interface Auditoria {
+  id: string;
+  autorId: string;
+  autor: { id: string; nome: string };
+  itemRoteiroId: string | null;
+  dataHoraCorrecao: string;
+  entidade: string;
+  campo: string;
+  valorAnterior: string;
+  valorNovo: string;
+  justificativa: string | null;
+  itemRoteiro: {
+    ordem: number;
+    ponto: Ponto;
+    roteiro: { id: string; data: string; unidadeId: string; entregadorId: string };
+  } | null;
+}

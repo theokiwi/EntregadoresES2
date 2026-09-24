@@ -32,6 +32,21 @@ export function Painel() {
         </ul>
       </Card>
 
+      <Card title="Correção de registros (C5)">
+        <ul className="flex flex-col gap-2 text-sm text-slate-700">
+          <li>
+            <Link className="text-slate-900 underline" to="/correcoes">
+              Corrigir horário de chegada/saída
+            </Link>
+          </li>
+          <li>
+            <Link className="text-slate-900 underline" to="/auditoria">
+              Consultar trilha de auditoria
+            </Link>
+          </li>
+        </ul>
+      </Card>
+
       <Card title="Equipe e base de pontos (C2)">
         <ul className="flex flex-col gap-2 text-sm text-slate-700">
           <li>

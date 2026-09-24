@@ -7,6 +7,8 @@ const LINKS: { to: string; label: string; perfis: Perfil[] }[] = [
   { to: '/roteiros/montar', label: 'Montar roteiro', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/entregadores', label: 'Entregadores', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/pontos', label: 'Pontos', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
+  { to: '/correcoes', label: 'Corrigir horário', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
+  { to: '/auditoria', label: 'Auditoria', perfis: ['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL'] },
   { to: '/unidades', label: 'Unidades', perfis: ['SUPERVISOR_GERAL'] },
   { to: '/supervisores', label: 'Supervisores', perfis: ['SUPERVISOR_GERAL'] },
   { to: '/parametros', label: 'Parâmetros', perfis: ['SUPERVISOR_GERAL'] },
