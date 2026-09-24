@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body } from '@nestjs/common';
 import { Perfil } from '../../generated/prisma/client';
 import { Perfis } from '../common/auth/perfis.decorator';
 import { TenantContextService } from '../common/tenant/tenant-context.service';
@@ -22,6 +22,30 @@ export class RoteirosController {
   @Perfis(Perfil.ENTREGADOR)
   consultarDoDia() {
     return this.roteirosService.consultarDoDia(this.tenant);
+  }
+
+  @Post(':id/iniciar')
+  @Perfis(Perfil.ENTREGADOR)
+  iniciar(@Param('id') id: string) {
+    return this.roteirosService.iniciar(this.tenant, id);
+  }
+
+  @Post(':id/finalizar')
+  @Perfis(Perfil.ENTREGADOR)
+  finalizar(@Param('id') id: string) {
+    return this.roteirosService.finalizar(this.tenant, id);
+  }
+
+  @Post('itens/:itemId/chegada')
+  @Perfis(Perfil.ENTREGADOR)
+  registrarChegada(@Param('itemId') itemId: string) {
+    return this.roteirosService.registrarChegada(this.tenant, itemId);
+  }
+
+  @Post('itens/:itemId/saida')
+  @Perfis(Perfil.ENTREGADOR)
+  registrarSaida(@Param('itemId') itemId: string) {
+    return this.roteirosService.registrarSaida(this.tenant, itemId);
   }
 
   @Get(':id')
