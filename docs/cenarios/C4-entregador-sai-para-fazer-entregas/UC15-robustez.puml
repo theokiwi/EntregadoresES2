@@ -1,0 +1,20 @@
+@startuml UC15-robustez
+title UC15 — Calcular tempo parado (Robustez)
+
+control RegistrarSaidaController as UC13
+control FinalizarRoteiroController as UC14
+control CalculadoraTempoParado
+entity Ponto
+entity Roteiro
+
+UC13 -> CalculadoraTempoParado : 1. calcularTempoParado(pontoId) [modo por ponto]
+CalculadoraTempoParado -> Ponto : 2. ler ordem, horaChegada, horaSaida
+CalculadoraTempoParado -> CalculadoraTempoParado : 3. aplicar RN01/RN02
+CalculadoraTempoParado -> UC13 : 4. retornar tempoParado do ponto
+
+UC14 -> CalculadoraTempoParado : 5. calcularTempoTotalParado(roteiroId) [modo total]
+CalculadoraTempoParado -> Roteiro : 6. ler pontos e seus tempoParado
+CalculadoraTempoParado -> CalculadoraTempoParado : 7. somar exceto ponto de partida (RN03)
+CalculadoraTempoParado -> UC14 : 8. retornar tempoTotalParado
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml UC11-robustez
+title UC11 — Iniciar roteiro (Robustez)
+
+actor Entregador
+boundary TelaRoteiroDoDia
+control IniciarRoteiroController
+entity Roteiro
+entity Ponto
+
+Entregador -> TelaRoteiroDoDia : 1. selecionar "Iniciar roteiro"
+TelaRoteiroDoDia -> IniciarRoteiroController : 2. iniciarRoteiro(roteiroId)
+IniciarRoteiroController -> Roteiro : 3. buscar roteiro(roteiroId, status)
+IniciarRoteiroController -> Roteiro : 4. definir horaInicio, status = EmAndamento
+IniciarRoteiroController -> Ponto : 5. marcar ponto de partida (sem tempoParado)
+IniciarRoteiroController -> TelaRoteiroDoDia : 6. retornar roteiro atualizado
+TelaRoteiroDoDia -> Entregador : 7. exibir próximo ponto pendente
+
+@enduml
