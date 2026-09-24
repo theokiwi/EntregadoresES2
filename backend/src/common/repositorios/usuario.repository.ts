@@ -53,6 +53,17 @@ export class UsuarioRepository {
     return this.prisma.usuario.create({ data: input });
   }
 
+  // UC06, passo 5: lista de Entregadores da Unidade.
+  listEntregadoresPorUnidade(
+    estabelecimentoId: string,
+    unidadeId: string,
+  ): Promise<Usuario[]> {
+    return this.prisma.usuario.findMany({
+      where: { estabelecimentoId, unidadeId, perfil: Perfil.ENTREGADOR },
+      orderBy: { nome: 'asc' },
+    });
+  }
+
   definirSenha(usuarioId: string, senhaHash: string): Promise<Usuario> {
     return this.prisma.usuario.update({
       where: { id: usuarioId },
