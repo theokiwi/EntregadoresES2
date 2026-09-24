@@ -1,0 +1,224 @@
+@startuml modelo-projeto
+title Modelo de Projeto — Entregadores (derivado dos diagramas de robustez)
+skinparam classAttributeIconSize 0
+left to right direction
+
+package "Apresentação — React SPA (ADR-008)" {
+  class TelaLogin
+  class TelaCadastroUnidade
+  class TelaCadastroSupervisor
+  class TelaParametrizarCustos
+  class TelaParametrizarJornada
+  class TelaGerenciarPerfis
+  class TelaCadastroEntregador
+  class TelaCadastroPonto
+  class TelaRegistroDePedidos
+  class TelaMontarRoteiro
+  class TelaRoteiroDoDia
+  class TelaRegistroDePonto
+  class TelaCorrecaoDeRegistro
+  class TelaTrilhaDeAuditoria
+  class TelaDashboard
+  class TelaHistorico
+  class TelaMeuHistorico
+}
+
+package "Aplicação — Autenticação" {
+  class AutenticacaoController {
+    +autenticar(email, senha): SessaoToken
+  }
+}
+
+package "Aplicação — Configuração (C1)" {
+  class CadastrarUnidadeController {
+    +cadastrar(dto): Unidade
+  }
+  class CadastrarSupervisorController {
+    +cadastrar(dto): Supervisor
+  }
+  class ParametrizarCustosController {
+    +parametrizar(dto): Parametro
+  }
+  class ParametrizarJornadaController {
+    +parametrizar(dto): Parametro
+  }
+  class GerenciarPerfilController {
+    +atribuirPerfil(usuarioId, perfil, unidadeId): Usuario
+  }
+}
+
+package "Aplicação — Cadastros (C2)" {
+  class CadastrarEntregadorController {
+    +cadastrar(dto): Entregador
+  }
+  class CadastrarPontoController {
+    +cadastrar(dto): Ponto
+  }
+}
+
+package "Aplicação — Planejamento (C3)" {
+  class RegistrarPedidoController {
+    +registrarPedido(endereco): Ponto
+  }
+  class MontarRoteiroController {
+    +montar(entregadorId, data, pontosOrdenados): Roteiro
+  }
+  class ConsultarRoteiroDoDiaController {
+    +consultarDoDia(entregadorId): Roteiro
+  }
+}
+
+package "Aplicação — Execução do roteiro (C4)" {
+  class IniciarRoteiroController {
+    +iniciar(roteiroId): Roteiro
+  }
+  class RegistrarChegadaController {
+    +registrarChegada(itemRoteiroId, hora): ItemRoteiro
+  }
+  class RegistrarSaidaController {
+    +registrarSaida(itemRoteiroId, hora): ItemRoteiro
+  }
+  class FinalizarRoteiroController {
+    +finalizar(roteiroId): Roteiro
+  }
+  class CalculadoraTempoParado {
+    +calcularPorPonto(itemRoteiroId): Duracao
+    +calcularTotalDoRoteiro(roteiroId): Duracao
+  }
+  class CalculadoraDistanciaCusto {
+    +calcular(roteiroId): DistanciaCusto
+  }
+}
+
+package "Aplicação — Correção (C5)" {
+  class CorrigirHorarioController {
+    +corrigir(itemRoteiroId, campo, novoValor, justificativa): ItemRoteiro
+  }
+  class ConsultarAuditoriaController {
+    +consultar(unidadeId, filtros): List<Auditoria>
+  }
+}
+
+package "Aplicação — Análise (C6)" {
+  class DashboardController {
+    +consultarAgregado(unidadeId, recorte): DashboardDTO
+  }
+  class HistoricoController {
+    +consultarHistorico(unidadeId, periodo): List<ItemRoteiro>
+  }
+  class ConsultarCustoController {
+    +consultarCusto(roteiroId): CustoDTO
+  }
+  class ExportarRelatorioController {
+    +exportarCsv(unidadeId, filtros): Arquivo
+  }
+  class MeuHistoricoController {
+    +consultarProprio(entregadorId, periodo): List<ItemRoteiro>
+  }
+}
+
+package "Domínio" {
+  abstract class Usuario {
+    +autenticar(senha): boolean
+  }
+  class Entregador
+  class Supervisor
+  class Estabelecimento
+  class Unidade
+  class Parametro
+  class Ponto {
+    +validarCoordenadas(): boolean
+  }
+  class Roteiro {
+    +estaCompleto(): boolean
+    +podeFinalizar(): boolean
+  }
+  class ItemRoteiro {
+    +calcularTempoParado(): Duracao
+  }
+  class Auditoria
+  Usuario <|-- Entregador
+  Usuario <|-- Supervisor
+}
+
+package "Infraestrutura — Persistência (Prisma, ADR-008)" {
+  interface RepositorioUsuario
+  interface RepositorioUnidade
+  interface RepositorioPonto
+  interface RepositorioRoteiro
+  interface RepositorioParametro
+  interface RepositorioAuditoria
+  note bottom of RepositorioAuditoria
+    Cada interface tem uma implementação
+    concreta baseada em Prisma (PostgreSQL),
+    sempre filtrando por estabelecimento_id
+    (Middleware Multi-tenant, ADR-004).
+  end note
+}
+
+TelaLogin --> AutenticacaoController
+TelaCadastroUnidade --> CadastrarUnidadeController
+TelaCadastroSupervisor --> CadastrarSupervisorController
+TelaParametrizarCustos --> ParametrizarCustosController
+TelaParametrizarJornada --> ParametrizarJornadaController
+TelaGerenciarPerfis --> GerenciarPerfilController
+TelaCadastroEntregador --> CadastrarEntregadorController
+TelaCadastroPonto --> CadastrarPontoController
+TelaRegistroDePedidos --> RegistrarPedidoController
+TelaMontarRoteiro --> MontarRoteiroController
+TelaRoteiroDoDia --> ConsultarRoteiroDoDiaController
+TelaRoteiroDoDia --> IniciarRoteiroController
+TelaRegistroDePonto --> RegistrarChegadaController
+TelaRegistroDePonto --> RegistrarSaidaController
+TelaRoteiroDoDia --> FinalizarRoteiroController
+TelaCorrecaoDeRegistro --> CorrigirHorarioController
+TelaTrilhaDeAuditoria --> ConsultarAuditoriaController
+TelaDashboard --> DashboardController
+TelaDashboard --> ExportarRelatorioController
+TelaHistorico --> HistoricoController
+TelaHistorico --> ExportarRelatorioController
+TelaHistorico --> ConsultarCustoController
+TelaMeuHistorico --> MeuHistoricoController
+
+RegistrarPedidoController ..> CadastrarPontoController : «include» condicional (ADR-010)
+RegistrarSaidaController ..> CalculadoraTempoParado : «include»
+FinalizarRoteiroController ..> CalculadoraTempoParado : «include»
+FinalizarRoteiroController ..> CalculadoraDistanciaCusto : «include»
+CorrigirHorarioController ..> CalculadoraTempoParado : reaproveita (ADR-013)
+
+AutenticacaoController --> RepositorioUsuario
+CadastrarUnidadeController --> RepositorioUnidade
+CadastrarSupervisorController --> RepositorioUsuario
+ParametrizarCustosController --> RepositorioParametro
+ParametrizarJornadaController --> RepositorioParametro
+GerenciarPerfilController --> RepositorioUsuario
+CadastrarEntregadorController --> RepositorioUsuario
+CadastrarPontoController --> RepositorioPonto
+RegistrarPedidoController --> RepositorioPonto
+MontarRoteiroController --> RepositorioRoteiro
+ConsultarRoteiroDoDiaController --> RepositorioRoteiro
+IniciarRoteiroController --> RepositorioRoteiro
+RegistrarChegadaController --> RepositorioRoteiro
+RegistrarSaidaController --> RepositorioRoteiro
+FinalizarRoteiroController --> RepositorioRoteiro
+CalculadoraTempoParado --> RepositorioRoteiro
+CalculadoraDistanciaCusto --> RepositorioRoteiro
+CalculadoraDistanciaCusto --> RepositorioParametro
+CorrigirHorarioController --> RepositorioRoteiro
+CorrigirHorarioController --> RepositorioAuditoria
+ConsultarAuditoriaController --> RepositorioAuditoria
+DashboardController --> RepositorioRoteiro
+HistoricoController --> RepositorioRoteiro
+ConsultarCustoController --> RepositorioRoteiro
+ExportarRelatorioController --> RepositorioRoteiro
+MeuHistoricoController --> RepositorioRoteiro
+
+RepositorioUsuario ..> Usuario
+RepositorioUnidade ..> Unidade
+RepositorioPonto ..> Ponto
+RepositorioRoteiro ..> Roteiro
+RepositorioRoteiro ..> ItemRoteiro
+RepositorioParametro ..> Parametro
+RepositorioAuditoria ..> Auditoria
+
+@enduml
