@@ -1,0 +1,25 @@
+@startuml C6-casos-de-uso
+left to right direction
+title C6 — Acompanhamento e análise
+
+actor "Supervisor local" as SupervisorLocal
+actor Entregador
+
+rectangle "Sistema — C6 Acompanhamento e análise" {
+  usecase "UC18\nVisualizar dashboard de\ntempo parado (dia/mês/período)" as UC18
+  usecase "UC19\nConsultar histórico de pontos\ne tempos com endereços" as UC19
+  usecase "UC20\nConsultar custo estimado\ndo roteiro" as UC20
+  usecase "UC21\nExportar relatório" as UC21
+  usecase "UC22\nConsultar o próprio histórico" as UC22
+}
+
+SupervisorLocal -- UC18
+SupervisorLocal -- UC19
+SupervisorLocal -- UC20
+SupervisorLocal -- UC21
+Entregador -- UC22
+
+UC21 .> UC18 : <<extend>>
+UC21 .> UC19 : <<extend>>
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml UC19-robustez
+title UC19 — Consultar histórico de pontos e tempos com endereços (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaHistorico
+control HistoricoController
+entity Roteiro
+entity Ponto
+
+SupervisorLocal -> TelaHistorico : 1. acessar histórico
+SupervisorLocal -> TelaHistorico : 2. informar período (e filtro de entregador)
+TelaHistorico -> HistoricoController : 3. consultarHistorico(unidadeId, periodo, entregadorId?)
+HistoricoController -> Roteiro : 4. buscar roteiros finalizados (unidadeId, periodo)
+HistoricoController -> Ponto : 5. buscar pontos de cada roteiro (endereço, tempos)
+HistoricoController -> TelaHistorico : 6. retornar lista de roteiros e pontos
+TelaHistorico -> SupervisorLocal : 7. exibir histórico detalhado
+
+@enduml
