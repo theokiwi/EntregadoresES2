@@ -1,0 +1,29 @@
+@startuml C3-casos-de-uso
+left to right direction
+title C3 — Planejamento do dia
+
+actor "Supervisor local" as SupervisorLocal
+actor Entregador
+
+rectangle "Sistema — C3 Planejamento do dia" {
+  usecase "UC08\nRegistrar pedidos/\nendereços de entrega" as UC08
+  usecase "UC09\nMontar roteiro diário" as UC09
+  usecase "UC10\nConsultar roteiro do dia" as UC10
+  usecase "UC07\nCadastrar ponto" as UC07
+}
+
+SupervisorLocal -- UC08
+SupervisorLocal -- UC09
+Entregador -- UC10
+
+UC08 ..> UC07 : <<include>>\n(condicional: só quando o\nendereço não existe na base)
+
+note bottom of UC07
+  UC07 pertence ao cenário C2
+  (Montagem da equipe e da base
+  de pontos); repetido aqui só
+  como referência ao include
+  condicional de UC08 (ADR-010).
+end note
+
+@enduml
