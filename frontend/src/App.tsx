@@ -6,6 +6,8 @@ import { Painel } from './pages/Painel';
 import { CadastroEntregador } from './pages/entregadores/CadastroEntregador';
 import { CadastroPonto } from './pages/pontos/CadastroPonto';
 import { CadastroUnidade } from './pages/unidades/CadastroUnidade';
+import { RegistrarPedido } from './pages/pedidos/RegistrarPedido';
+import { MontarRoteiro } from './pages/roteiros/MontarRoteiro';
 import { CadastroSupervisor } from './pages/supervisores/CadastroSupervisor';
 import { Parametros } from './pages/parametros/Parametros';
 import { GerenciarPerfis } from './pages/perfis/GerenciarPerfis';
@@ -29,6 +31,8 @@ export function App() {
           <Route element={<ProtectedRoute perfis={['SUPERVISOR_LOCAL', 'SUPERVISOR_GERAL']} />}>
             <Route path="/entregadores" element={<CadastroEntregador />} />
             <Route path="/pontos" element={<CadastroPonto />} />
+            <Route path="/pedidos" element={<RegistrarPedido />} />
+            <Route path="/roteiros/montar" element={<MontarRoteiro />} />
           </Route>
         </Route>
       </Route>
