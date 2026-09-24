@@ -1,0 +1,25 @@
+@startuml C4-casos-de-uso
+left to right direction
+title C4 — Entregador sai para fazer entregas
+
+actor Entregador
+
+rectangle "Sistema — C4 Entregador sai para fazer entregas" {
+  usecase "UC11\nIniciar roteiro" as UC11
+  usecase "UC12\nRegistrar chegada no ponto" as UC12
+  usecase "UC13\nRegistrar saída do ponto" as UC13
+  usecase "UC14\nFinalizar roteiro" as UC14
+  usecase "UC15\nCalcular tempo parado" as UC15
+  usecase "UC23\nCalcular distância e\ncusto do roteiro" as UC23
+}
+
+Entregador -- UC11
+Entregador -- UC12
+Entregador -- UC13
+Entregador -- UC14
+
+UC13 .> UC15 : <<include>>
+UC14 .> UC15 : <<include>>
+UC14 .> UC23 : <<include>>
+
+@enduml

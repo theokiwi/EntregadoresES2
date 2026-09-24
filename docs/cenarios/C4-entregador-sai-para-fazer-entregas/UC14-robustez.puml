@@ -1,0 +1,24 @@
+@startuml UC14-robustez
+title UC14 — Finalizar roteiro (Robustez)
+
+actor Entregador
+boundary TelaRoteiroDoDia
+control FinalizarRoteiroController
+control CalculadoraTempoParado
+control CalculadoraDistanciaCusto
+entity Roteiro
+entity Ponto
+
+Entregador -> TelaRoteiroDoDia : 1. (último ponto já com saída) / "Finalizar roteiro"
+TelaRoteiroDoDia -> FinalizarRoteiroController : 2. finalizarRoteiro(roteiroId)
+FinalizarRoteiroController -> Roteiro : 3. verificar pontos pendentes (RN06)
+FinalizarRoteiroController -> CalculadoraTempoParado : 4. calcularTempoTotalParado(roteiroId) «include UC15»
+CalculadoraTempoParado -> Ponto : 5. somar tempoParado dos pontos (RN03)
+FinalizarRoteiroController -> CalculadoraDistanciaCusto : 6. calcularDistanciaECusto(roteiroId) «include UC23»
+CalculadoraDistanciaCusto -> Ponto : 7. ler coordenadas de todos os pontos
+CalculadoraDistanciaCusto -> Roteiro : 8. gravar distanciaTotal, custoEstimado
+FinalizarRoteiroController -> Roteiro : 9. gravar tempoTotalParado, horaTermino, status = Finalizado
+FinalizarRoteiroController -> TelaRoteiroDoDia : 10. retornar resumo do roteiro
+TelaRoteiroDoDia -> Entregador : 11. exibir resumo (tempo parado, distância, custo)
+
+@enduml
