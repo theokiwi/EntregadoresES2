@@ -141,4 +141,27 @@ export class RoteiroRepository {
       data: { ...dados, status: RoteiroStatus.FINALIZADO },
     });
   }
+
+  // UC16, passo 5-6: corrige horaChegada/horaSaida e o tempoParado recalculado (UC15).
+  corrigirItem(
+    itemRoteiroId: string,
+    dados: {
+      horaChegada?: Date;
+      horaSaida?: Date;
+      tempoParadoMin: number | null;
+    },
+  ) {
+    return this.prisma.itemRoteiro.update({
+      where: { id: itemRoteiroId },
+      data: dados,
+    });
+  }
+
+  // UC16, passo 7 (ADR-013): só o tempoTotalParado é recalculado; status/distância/custo não mudam.
+  atualizarTempoTotalParado(roteiroId: string, tempoTotalParadoMin: number) {
+    return this.prisma.roteiro.update({
+      where: { id: roteiroId },
+      data: { tempoTotalParadoMin },
+    });
+  }
 }

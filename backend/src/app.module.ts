@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
+import { AuditoriaModule } from './auditoria/auditoria.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
 import { PerfilGuard } from './common/auth/perfil.guard';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { CorrecoesModule } from './correcoes/correcoes.module';
 import { EntregadoresModule } from './entregadores/entregadores.module';
 import { ParametrosModule } from './parametros/parametros.module';
 import { PedidosModule } from './pedidos/pedidos.module';
@@ -30,6 +32,8 @@ import { UnidadesModule } from './unidades/unidades.module';
     PontosModule,
     PedidosModule,
     RoteirosModule,
+    CorrecoesModule,
+    AuditoriaModule,
   ],
   controllers: [AppController],
   providers: [

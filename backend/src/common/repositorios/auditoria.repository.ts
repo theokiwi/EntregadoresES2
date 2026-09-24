@@ -13,16 +13,51 @@ export interface RegistrarAuditoriaInput {
   justificativa?: string | null;
 }
 
-/**
- * RepositorioAuditoria (modelo-projeto.puml). Registro imutável (RNF05) — só create/read,
- * nunca update/delete. A consulta da trilha (UC17) chega na Fase 5; aqui só o registro
- * usado por UC05.
- */
+export interface ListarCorrecoesInput {
+  estabelecimentoId: string;
+  unidadeId?: string;
+  dataInicial: Date;
+  dataFinal: Date;
+}
+
+/** RepositorioAuditoria (modelo-projeto.puml). Registro imutável (RNF05) — só create/read. */
 @Injectable()
 export class AuditoriaRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   registrar(input: RegistrarAuditoriaInput): Promise<Auditoria> {
     return this.prisma.auditoria.create({ data: input });
+  }
+
+  // UC17: só correções de horário (itemRoteiroId preenchido — UC16), nunca as trocas de
+  // perfil/Unidade da UC05, que são outra trilha (escopo de Estabelecimento, não Unidade).
+  listarCorrecoes(input: ListarCorrecoesInput) {
+    return this.prisma.auditoria.findMany({
+      where: {
+        estabelecimentoId: input.estabelecimentoId,
+        itemRoteiroId: { not: null },
+        dataHoraCorrecao: { gte: input.dataInicial, lte: input.dataFinal },
+        ...(input.unidadeId
+          ? { itemRoteiro: { roteiro: { unidadeId: input.unidadeId } } }
+          : {}),
+      },
+      include: {
+        autor: { select: { id: true, nome: true } },
+        itemRoteiro: {
+          include: {
+            ponto: true,
+            roteiro: {
+              select: {
+                id: true,
+                data: true,
+                unidadeId: true,
+                entregadorId: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { dataHoraCorrecao: 'desc' },
+    });
   }
 }
