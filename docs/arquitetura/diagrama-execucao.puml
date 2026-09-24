@@ -1,0 +1,47 @@
+@startuml diagrama-execucao
+title Diagrama de Execução (Implantação) — MVP Monitoramento de Tempo Parado
+
+node "Dispositivo do Entregador\n(navegador mobile)" as DeviceEntregador {
+  artifact "SPA React (build estático)" as SPA_Entregador
+}
+
+node "Dispositivo do Supervisor\n(navegador desktop ou mobile)" as DeviceSupervisor {
+  artifact "SPA React (build estático)" as SPA_Supervisor
+}
+
+cloud "Internet (HTTPS)" as Internet
+
+node "Servidor Web / CDN" as WebServer {
+  artifact "Front-end estático (React build)" as FrontBuild
+}
+
+node "Contêiner Docker — Back-end" as BackendContainer {
+  component "API NestJS" as API
+  component "Middleware Multi-tenant" as Tenant
+}
+
+node "Contêiner Docker — Banco de Dados" as DBContainer {
+  database "PostgreSQL" as DB
+}
+
+DeviceEntregador --> Internet : HTTPS
+DeviceSupervisor --> Internet : HTTPS
+Internet --> WebServer : carrega SPA
+Internet --> BackendContainer : chamadas API REST/JSON (JWT)
+
+WebServer ..> FrontBuild
+SPA_Entregador ..> FrontBuild : mesmo build,\nlayout responsivo
+SPA_Supervisor ..> FrontBuild
+
+API --> Tenant
+Tenant --> DBContainer : consultas filtradas por\nestabelecimento_id (TCP/5432)
+
+note right of BackendContainer
+  Um único deployment do back-end
+  atende todos os Estabelecimentos
+  (multi-tenant); isolamento é
+  lógico (coluna estabelecimento_id),
+  não físico.
+end note
+
+@enduml
