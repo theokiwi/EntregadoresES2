@@ -7,8 +7,10 @@ import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
 import { PerfilGuard } from './common/auth/perfil.guard';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { EntregadoresModule } from './entregadores/entregadores.module';
 import { ParametrosModule } from './parametros/parametros.module';
 import { PerfisModule } from './perfis/perfis.module';
+import { PontosModule } from './pontos/pontos.module';
 import { SupervisoresModule } from './supervisores/supervisores.module';
 import { UnidadesModule } from './unidades/unidades.module';
 
@@ -22,6 +24,8 @@ import { UnidadesModule } from './unidades/unidades.module';
     SupervisoresModule,
     ParametrosModule,
     PerfisModule,
+    EntregadoresModule,
+    PontosModule,
   ],
   controllers: [AppController],
   providers: [

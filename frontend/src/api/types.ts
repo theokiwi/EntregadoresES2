@@ -35,6 +35,19 @@ export interface UsuarioPublico {
   ativo: boolean;
   nome: string;
   telefone: string | null;
+  documento: string | null;
+  veiculo: string | null;
+  rendimentoKmLitro: string | null;
   senhaDefinida: boolean;
+  createdAt: string;
+}
+
+export interface Ponto {
+  id: string;
+  estabelecimentoId: string;
+  unidadeId: string;
+  endereco: string;
+  latitude: string;
+  longitude: string;
   createdAt: string;
 }

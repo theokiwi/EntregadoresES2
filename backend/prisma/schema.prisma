@@ -90,6 +90,9 @@ model Usuario {
   // UC00: login recebe só e-mail/senha, sem indicar o Estabelecimento — o e-mail precisa
   // ser único no sistema todo para resolver univocamente o Usuario (e seu tenant).
   @@unique([email])
+  // UC06, fluxo alternativo 3a: CPF único por Estabelecimento (NULL não conflita — só
+  // Entregadores têm documento preenchido).
+  @@unique([estabelecimentoId, documento])
   @@index([unidadeId])
   @@index([estabelecimentoId])
   @@map("usuarios")
@@ -110,17 +113,19 @@ model Parametro {
 }
 
 model Ponto {
-  id        String   @id @default(uuid())
-  unidadeId String
-  endereco  String
-  latitude  Decimal  @db.Decimal(9, 6)
-  longitude Decimal  @db.Decimal(9, 6)
-  createdAt DateTime @default(now())
+  id                String   @id @default(uuid())
+  estabelecimentoId String
+  unidadeId         String
+  endereco          String
+  latitude          Decimal  @db.Decimal(9, 6)
+  longitude         Decimal  @db.Decimal(9, 6)
+  createdAt         DateTime @default(now())
 
   unidade      Unidade        @relation(fields: [unidadeId], references: [id])
   itensRoteiro ItemRoteiro[]
 
   @@index([unidadeId])
+  @@index([estabelecimentoId])
   @@map("pontos")
 }
 
