@@ -1,0 +1,20 @@
+@startuml UC00-robustez
+title UC00 — Autenticar-se (Robustez)
+
+actor Usuario as ActorUsuario
+boundary TelaLogin
+control AutenticacaoController
+entity Usuario
+entity Estabelecimento
+entity Unidade
+
+ActorUsuario -> TelaLogin : 1. informar e-mail e senha
+TelaLogin -> AutenticacaoController : 2. autenticar(email, senha)
+AutenticacaoController -> Usuario : 3. buscar por email, validar hash de senha e status ativo
+AutenticacaoController -> Estabelecimento : 4. resolver estabelecimentoId do usuário
+AutenticacaoController -> Unidade : 5. resolver unidadeId do usuário (quando aplicável)
+AutenticacaoController -> AutenticacaoController : 6. emitir token (JWT: perfil, estabelecimentoId, unidadeId, exp=8h)
+AutenticacaoController -> TelaLogin : 7. retornar token
+TelaLogin -> ActorUsuario : 8. redirecionar à tela inicial do perfil
+
+@enduml
