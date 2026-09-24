@@ -7,25 +7,25 @@
 - **Ator principal:** Entregador
 - **Atores secundários:** Sistema (via `«include»` de UC15 e UC23)
 - **Prioridade (MoSCoW):** Must
-- **Rastreio:** RF06, RN03
+- **Rastreio:** RF06, RN03 (ver [ADR-011](../../decisoes/ADR-011-finalizacao-exige-todos-pontos.md))
 
 ## 2. Objetivo
 Como Entregador, quero finalizar meu roteiro ao concluir todas as entregas, para que o sistema calcule o tempo total parado e o custo do trajeto.
 
 ## 3. Pré-condições e gatilho
-**Pré-condições:** Roteiro em status "Em andamento"; todos os pontos do roteiro com saída registrada (UC13).
+**Pré-condições:** Roteiro em status "Em andamento".
 **Gatilho:** Entregador registra a saída do último ponto do roteiro, ou aciona "Finalizar roteiro" manualmente.
 
 ## 4. Fluxo principal
-1. Entregador registra a saída do último ponto do roteiro (UC13).
-2. Sistema identifica que não há mais pontos pendentes na sequência (RN06).
+1. Entregador registra a saída do último ponto do roteiro (UC13) ou aciona "Finalizar roteiro".
+2. Sistema verifica que todos os pontos da sequência têm saída registrada (RN06). Finalização com pontos pendentes não é permitida ([ADR-011](../../decisoes/ADR-011-finalizacao-exige-todos-pontos.md)).
 3. Sistema inclui **UC15 Calcular tempo parado** (modo total) para somar o tempo parado de todos os pontos, exceto o de partida (RN03).
 4. Sistema inclui **UC23 Calcular distância e custo do roteiro** para computar a distância percorrida e o custo estimado (RN07).
 5. Sistema grava o horário de término, o tempo total parado, a distância total e o custo estimado no roteiro, e atualiza o status para "Finalizado".
 6. Sistema exibe ao Entregador um resumo do roteiro concluído.
 
 ## 5. Fluxos alternativos e de exceção
-- **1a. Entregador aciona "Finalizar roteiro" manualmente com pontos pendentes:** sistema alerta sobre pontos não visitados e solicita confirmação explícita antes de finalizar.
+- **1a. Entregador aciona "Finalizar roteiro" com pontos pendentes:** sistema bloqueia a finalização e informa quais pontos ainda não têm saída registrada ([ADR-011](../../decisoes/ADR-011-finalizacao-exige-todos-pontos.md)). Não há finalização parcial.
 - **5a. Roteiro já finalizado:** sistema informa e exibe o resumo já calculado, sem recalcular.
 
 ## 6. Pós-condições
@@ -50,4 +50,4 @@ Como Entregador, quero finalizar meu roteiro ao concluir todas as entregas, para
 - RNF01 — persistência garantindo histórico completo do roteiro.
 
 ## 11. Questões em aberto
-- A especificação não define se é possível finalizar um roteiro com pontos pendentes (ex.: entregador não concluiu todas as entregas no dia). Assumido, para o MVP, que a finalização exige confirmação explícita nesse caso (fluxo 1a); comportamento a validar com o cliente.
+Nenhuma — resolvida via [ADR-011](../../decisoes/ADR-011-finalizacao-exige-todos-pontos.md). Retomada/cancelamento de um roteiro incompleto em outro dia está fora do escopo do MVP.
