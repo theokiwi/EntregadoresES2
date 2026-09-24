@@ -1,0 +1,24 @@
+@startuml C5-casos-de-uso
+left to right direction
+title C5 — Correção de registros
+
+actor "Supervisor local" as SupervisorLocal
+
+rectangle "Sistema — C5 Correção de registros" {
+  usecase "UC16\nCorrigir horário de\nchegada/saída" as UC16
+  usecase "UC17\nConsultar trilha\nde auditoria" as UC17
+  usecase "UC15\nCalcular tempo parado\n(cenário C4)" as UC15
+}
+
+SupervisorLocal -- UC16
+SupervisorLocal -- UC17
+
+UC16 .> UC15 : <<include>>\n(recalcula ponto e,\nse finalizado, o total)
+
+note right of UC15
+  UC15 é detalhado no cenário C4
+  (docs/cenarios/C4-.../UC15-calcular-tempo-parado.md).
+  Reaproveitado aqui por inclusão (ADR-013).
+end note
+
+@enduml

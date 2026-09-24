@@ -1,0 +1,16 @@
+@startuml UC17-robustez
+title UC17 — Consultar trilha de auditoria (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaTrilhaDeAuditoria
+control ConsultarAuditoriaController
+entity Auditoria
+
+SupervisorLocal -> TelaTrilhaDeAuditoria : 1. acessar trilha de auditoria
+SupervisorLocal -> TelaTrilhaDeAuditoria : 2. informar período (opcional)
+TelaTrilhaDeAuditoria -> ConsultarAuditoriaController : 3. consultarAuditoria(unidadeId, periodo)
+ConsultarAuditoriaController -> Auditoria : 4. buscar registros por unidadeId e período
+ConsultarAuditoriaController -> TelaTrilhaDeAuditoria : 5. retornar lista ordenada por data/hora
+TelaTrilhaDeAuditoria -> SupervisorLocal : 6. exibir trilha de auditoria
+
+@enduml

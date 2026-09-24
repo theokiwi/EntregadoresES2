@@ -1,0 +1,28 @@
+@startuml UC16-robustez
+title UC16 — Corrigir horário de chegada/saída (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaCorrecaoDeRegistro
+control CorrigirHorarioController
+control CalculadoraTempoParado
+entity Ponto
+entity Roteiro
+entity Auditoria
+
+SupervisorLocal -> TelaCorrecaoDeRegistro : 1. selecionar ponto e campo a corrigir
+TelaCorrecaoDeRegistro -> CorrigirHorarioController : 2. carregarValorAtual(pontoId, campo)
+CorrigirHorarioController -> Ponto : 3. ler valor atual
+SupervisorLocal -> TelaCorrecaoDeRegistro : 4. informar novo valor + justificativa
+TelaCorrecaoDeRegistro -> CorrigirHorarioController : 5. corrigirHorario(pontoId, campo, novoValor, justificativa)
+CorrigirHorarioController -> CorrigirHorarioController : 6. validar (horaSaida > horaChegada, justificativa obrigatória)
+CorrigirHorarioController -> Ponto : 7. gravar novo valor
+CorrigirHorarioController -> Auditoria : 8. criar registro (autor, valores antigo/novo, justificativa)
+CorrigirHorarioController -> CalculadoraTempoParado : 9. calcularTempoParado(pontoId) «include UC15»
+CalculadoraTempoParado -> Ponto : 10. gravar tempoParado recalculado
+CorrigirHorarioController -> Roteiro : 11. verificar status
+CorrigirHorarioController -> CalculadoraTempoParado : 12. [se Finalizado] calcularTempoTotalParado(roteiroId) «include UC15»
+CalculadoraTempoParado -> Roteiro : 13. gravar tempoTotalParado recalculado
+CorrigirHorarioController -> TelaCorrecaoDeRegistro : 14. retornar confirmação
+TelaCorrecaoDeRegistro -> SupervisorLocal : 15. exibir confirmação da correção
+
+@enduml
