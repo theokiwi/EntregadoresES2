@@ -1,0 +1,18 @@
+@startuml UC22-robustez
+title UC22 — Consultar o próprio histórico (Robustez)
+
+actor Entregador
+boundary TelaMeuHistorico
+control MeuHistoricoController
+entity Roteiro
+entity Ponto
+
+Entregador -> TelaMeuHistorico : 1. acessar "Meu histórico"
+Entregador -> TelaMeuHistorico : 2. informar período
+TelaMeuHistorico -> MeuHistoricoController : 3. consultarMeuHistorico(entregadorIdAutenticado, periodo)
+MeuHistoricoController -> Roteiro : 4. buscar roteiros finalizados (entregadorId = autenticado, periodo)
+MeuHistoricoController -> Ponto : 5. buscar pontos de cada roteiro
+MeuHistoricoController -> TelaMeuHistorico : 6. retornar histórico
+TelaMeuHistorico -> Entregador : 7. exibir histórico
+
+@enduml

@@ -1,0 +1,22 @@
+@startuml UC21-robustez
+title UC21 — Exportar relatório (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaDashboard
+boundary TelaHistorico
+control ExportarRelatorioController
+control DashboardController
+control HistoricoController
+
+SupervisorLocal -> TelaDashboard : 1a. acionar "Exportar" (a partir de UC18)
+TelaDashboard -> ExportarRelatorioController : 2a. exportar(unidadeId, recorte) «extend UC18»
+ExportarRelatorioController -> DashboardController : 3a. obterDadosAgregados(unidadeId, recorte)
+
+SupervisorLocal -> TelaHistorico : 1b. acionar "Exportar" (a partir de UC19)
+TelaHistorico -> ExportarRelatorioController : 2b. exportar(unidadeId, periodo, filtro) «extend UC19»
+ExportarRelatorioController -> HistoricoController : 3b. obterHistorico(unidadeId, periodo, filtro)
+
+ExportarRelatorioController -> ExportarRelatorioController : 4. gerar arquivo CSV
+ExportarRelatorioController -> SupervisorLocal : 5. disponibilizar download
+
+@enduml

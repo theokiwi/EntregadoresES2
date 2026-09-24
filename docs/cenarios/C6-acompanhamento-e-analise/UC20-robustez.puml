@@ -1,0 +1,19 @@
+@startuml UC20-robustez
+title UC20 — Consultar custo estimado do roteiro (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaDetalheDoRoteiro
+control ConsultarCustoController
+entity Roteiro
+entity Entregador
+entity Parametro
+
+SupervisorLocal -> TelaDetalheDoRoteiro : 1. selecionar roteiro finalizado
+TelaDetalheDoRoteiro -> ConsultarCustoController : 2. consultarCusto(roteiroId)
+ConsultarCustoController -> Roteiro : 3. ler distanciaTotal, custoEstimado, status
+ConsultarCustoController -> Entregador : 4. ler rendimentoKmLitro (exibição informativa)
+ConsultarCustoController -> Parametro : 5. ler valorCombustivel (exibição informativa)
+ConsultarCustoController -> TelaDetalheDoRoteiro : 6. retornar custo e distância
+TelaDetalheDoRoteiro -> SupervisorLocal : 7. exibir custo estimado
+
+@enduml
