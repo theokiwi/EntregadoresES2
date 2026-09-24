@@ -1,0 +1,18 @@
+@startuml UC03-robustez
+title UC03 — Parametrizar custos (Robustez)
+
+actor "Supervisor geral" as SupervisorGeral
+boundary TelaParametrizarCustos
+control ParametrizarCustosController
+entity Parametro
+entity Unidade
+
+SupervisorGeral -> TelaParametrizarCustos : 1. selecionar unidade, informar valores
+TelaParametrizarCustos -> ParametrizarCustosController : 2. parametrizarCustos(unidadeId, valorCombustivel, custoPorKm)
+ParametrizarCustosController -> Unidade : 3. validar unidade do estabelecimento
+ParametrizarCustosController -> ParametrizarCustosController : 4. validar valores > 0
+ParametrizarCustosController -> Parametro : 5. gravar valorCombustivel, custoPorKm
+ParametrizarCustosController -> TelaParametrizarCustos : 6. retornar confirmação
+TelaParametrizarCustos -> SupervisorGeral : 7. exibir parâmetros atualizados
+
+@enduml

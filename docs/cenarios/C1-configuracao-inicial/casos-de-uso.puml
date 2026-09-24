@@ -1,0 +1,23 @@
+@startuml C1-casos-de-uso
+left to right direction
+title C1 — Configuração inicial
+
+actor "Supervisor local" as SupervisorLocal
+actor "Supervisor geral" as SupervisorGeral
+SupervisorLocal <|-- SupervisorGeral
+
+rectangle "Sistema — C1 Configuração inicial" {
+  usecase "UC01\nCadastrar unidade" as UC01
+  usecase "UC02\nCadastrar supervisor local" as UC02
+  usecase "UC03\nParametrizar custos" as UC03
+  usecase "UC04\nParametrizar jornada e\nregras de tempo parado" as UC04
+  usecase "UC05\nGerenciar perfis de acesso" as UC05
+}
+
+SupervisorGeral -- UC01
+SupervisorGeral -- UC02
+SupervisorGeral -- UC03
+SupervisorGeral -- UC04
+SupervisorGeral -- UC05
+
+@enduml

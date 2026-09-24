@@ -1,0 +1,20 @@
+@startuml UC04-robustez
+title UC04 — Parametrizar jornada e regras de tempo parado (Robustez)
+
+actor "Supervisor geral" as SupervisorGeral
+boundary TelaParametrizarJornada
+control ParametrizarJornadaController
+entity Parametro
+entity Unidade
+
+SupervisorGeral -> TelaParametrizarJornada : 1. selecionar unidade
+TelaParametrizarJornada -> ParametrizarJornadaController : 2. obterJornadaAtual(unidadeId)
+ParametrizarJornadaController -> Parametro : 3. ler jornadaPadraoHoras (default 8)
+SupervisorGeral -> TelaParametrizarJornada : 4. informar nova jornada
+TelaParametrizarJornada -> ParametrizarJornadaController : 5. parametrizarJornada(unidadeId, horas)
+ParametrizarJornadaController -> ParametrizarJornadaController : 6. validar 1 <= horas <= 24 (RN04)
+ParametrizarJornadaController -> Parametro : 7. gravar jornadaPadraoHoras
+ParametrizarJornadaController -> TelaParametrizarJornada : 8. retornar confirmação
+TelaParametrizarJornada -> SupervisorGeral : 9. exibir jornada atualizada
+
+@enduml
