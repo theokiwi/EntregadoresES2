@@ -1,0 +1,17 @@
+@startuml UC07-robustez
+title UC07 — Cadastrar ponto (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaCadastroPonto
+control CadastrarPontoController
+entity Ponto
+
+SupervisorLocal -> TelaCadastroPonto : 1. informar endereço e coordenadas
+TelaCadastroPonto -> CadastrarPontoController : 2. cadastrarPonto(dados)
+CadastrarPontoController -> Ponto : 3. validar latitude/longitude obrigatórias e dentro da faixa
+CadastrarPontoController -> Ponto : 4. validar campos de endereço obrigatórios
+CadastrarPontoController -> Ponto : 5. gravar (unidadeId do Supervisor autenticado)
+CadastrarPontoController -> TelaCadastroPonto : 6. retornar confirmação
+TelaCadastroPonto -> SupervisorLocal : 7. exibir ponto cadastrado
+
+@enduml

@@ -1,0 +1,15 @@
+@startuml C2-casos-de-uso
+left to right direction
+title C2 — Montagem da equipe e da base de pontos
+
+actor "Supervisor local" as SupervisorLocal
+
+rectangle "Sistema — C2 Montagem da equipe e da base de pontos" {
+  usecase "UC06\nCadastrar entregador\n(veículo, km/litro)" as UC06
+  usecase "UC07\nCadastrar ponto\n(endereço, coordenadas)" as UC07
+}
+
+SupervisorLocal -- UC06
+SupervisorLocal -- UC07
+
+@enduml

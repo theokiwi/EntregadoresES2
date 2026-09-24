@@ -1,0 +1,17 @@
+@startuml UC06-robustez
+title UC06 — Cadastrar entregador (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaCadastroEntregador
+control CadastrarEntregadorController
+entity Entregador
+
+SupervisorLocal -> TelaCadastroEntregador : 1. informar nome, telefone,\ndocumento, veículo, rendimentoKmLitro
+TelaCadastroEntregador -> CadastrarEntregadorController : 2. cadastrarEntregador(dados)
+CadastrarEntregadorController -> Entregador : 3. validar documento único no Estabelecimento
+CadastrarEntregadorController -> Entregador : 4. validar campos obrigatórios e rendimentoKmLitro > 0
+CadastrarEntregadorController -> Entregador : 5. gravar (unidadeId do Supervisor autenticado)
+CadastrarEntregadorController -> TelaCadastroEntregador : 6. retornar confirmação
+TelaCadastroEntregador -> SupervisorLocal : 7. exibir entregador cadastrado
+
+@enduml
