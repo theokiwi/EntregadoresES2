@@ -66,6 +66,7 @@ CREATE TABLE "parametros" (
 -- CreateTable
 CREATE TABLE "pontos" (
     "id" TEXT NOT NULL,
+    "estabelecimentoId" TEXT NOT NULL,
     "unidadeId" TEXT NOT NULL,
     "endereco" TEXT NOT NULL,
     "latitude" DECIMAL(9,6) NOT NULL,
@@ -144,10 +145,16 @@ CREATE INDEX "usuarios_estabelecimentoId_idx" ON "usuarios"("estabelecimentoId")
 CREATE UNIQUE INDEX "usuarios_email_key" ON "usuarios"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "usuarios_estabelecimentoId_documento_key" ON "usuarios"("estabelecimentoId", "documento");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "parametros_unidadeId_key" ON "parametros"("unidadeId");
 
 -- CreateIndex
 CREATE INDEX "pontos_unidadeId_idx" ON "pontos"("unidadeId");
+
+-- CreateIndex
+CREATE INDEX "pontos_estabelecimentoId_idx" ON "pontos"("estabelecimentoId");
 
 -- CreateIndex
 CREATE INDEX "roteiros_unidadeId_idx" ON "roteiros"("unidadeId");
