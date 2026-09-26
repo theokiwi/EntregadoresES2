@@ -1,0 +1,21 @@
+@startuml UC09-robustez
+title UC09 — Montar roteiro diário (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaMontarRoteiro
+control MontarRoteiroController
+entity Entregador
+entity Ponto
+entity Roteiro
+
+SupervisorLocal -> TelaMontarRoteiro : 1. selecionar entregador e data
+TelaMontarRoteiro -> MontarRoteiroController : 2. verificarRoteiroExistente(entregadorId, data)
+MontarRoteiroController -> Roteiro : 3. buscar roteiro(entregadorId, data) (RN05)
+SupervisorLocal -> TelaMontarRoteiro : 4. selecionar pontos e definir ordem
+TelaMontarRoteiro -> MontarRoteiroController : 5. montarRoteiro(entregadorId, data, pontosOrdenados)
+MontarRoteiroController -> Ponto : 6. validar pontos selecionados
+MontarRoteiroController -> Roteiro : 7. criar roteiro (status = NaoIniciado, pontos ordenados) (RN06)
+MontarRoteiroController -> TelaMontarRoteiro : 8. confirmar criação
+TelaMontarRoteiro -> SupervisorLocal : 9. exibir roteiro criado
+
+@enduml

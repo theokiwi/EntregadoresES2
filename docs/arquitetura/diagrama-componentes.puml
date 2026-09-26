@@ -1,0 +1,54 @@
+@startuml diagrama-componentes
+title Diagrama de Componentes — MVP Monitoramento de Tempo Parado
+
+package "Front-end (React + TypeScript, SPA responsiva)" {
+  [App Shell / Roteamento] as AppShell
+  [Módulo Entregador\n(roteiro do dia, registro de pontos)] as UIEntregador
+  [Módulo Supervisor\n(cadastros, dashboard, auditoria)] as UISupervisor
+  [Cliente API REST] as ApiClient
+  [Componentes de gráfico (Recharts)] as Charts
+}
+
+package "Back-end (Node.js + NestJS)" {
+  [API Gateway / Controllers REST] as API
+  [Módulo Autenticação e Autorização\n(JWT: estabelecimentoId, unidadeId, perfil)] as AuthModule
+  [Módulo Cadastros\n(Unidade, Entregador, Ponto, Supervisor, Parâmetro)] as CadastroModule
+  [Módulo Roteiro\n(montagem, chegada/saída, finalização)] as RoteiroModule
+  [Serviço Cálculo de Tempo Parado\n(UC15)] as CalcTempoParado
+  [Serviço Cálculo de Distância e Custo\n(UC23, Haversine)] as CalcDistanciaCusto
+  [Módulo Dashboard e Relatórios\n(UC18, UC19, UC21)] as DashboardModule
+  [Módulo Auditoria\n(UC16, UC17)] as AuditoriaModule
+  [Middleware Multi-tenant\n(filtro estabelecimento_id)] as TenantMiddleware
+  [ORM (Prisma)] as ORM
+}
+
+database "PostgreSQL" as DB
+
+AppShell --> UIEntregador
+AppShell --> UISupervisor
+UIEntregador --> ApiClient
+UISupervisor --> ApiClient
+UISupervisor --> Charts
+ApiClient --> API : HTTPS/JSON
+
+API --> AuthModule
+API --> TenantMiddleware
+TenantMiddleware --> CadastroModule
+TenantMiddleware --> RoteiroModule
+TenantMiddleware --> DashboardModule
+TenantMiddleware --> AuditoriaModule
+
+RoteiroModule --> CalcTempoParado : «include» UC15
+RoteiroModule --> CalcDistanciaCusto : «include» UC23
+RoteiroModule --> AuditoriaModule : registra alterações manuais
+
+CadastroModule --> ORM
+RoteiroModule --> ORM
+CalcTempoParado --> ORM
+CalcDistanciaCusto --> ORM
+DashboardModule --> ORM
+AuditoriaModule --> ORM
+
+ORM --> DB : consultas filtradas por estabelecimento_id
+
+@enduml

@@ -1,0 +1,17 @@
+@startuml UC10-robustez
+title UC10 — Consultar roteiro do dia (Robustez)
+
+actor Entregador
+boundary TelaRoteiroDoDia
+control ConsultarRoteiroDoDiaController
+entity Roteiro
+entity Ponto
+
+Entregador -> TelaRoteiroDoDia : 1. acessar "Meu roteiro do dia"
+TelaRoteiroDoDia -> ConsultarRoteiroDoDiaController : 2. consultarRoteiroDoDia(entregadorId, dataAtual)
+ConsultarRoteiroDoDiaController -> Roteiro : 3. buscar roteiro(entregadorId, dataAtual)
+ConsultarRoteiroDoDiaController -> Ponto : 4. ler pontos ordenados (RN06)
+ConsultarRoteiroDoDiaController -> TelaRoteiroDoDia : 5. retornar roteiro e pontos
+TelaRoteiroDoDia -> Entregador : 6. exibir pontos em ordem, com status
+
+@enduml

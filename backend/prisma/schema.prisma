@@ -1,0 +1,258 @@
+// Modelo de dados do MVP "Entregadores".
+// Fonte normativa: docs/classes/modelo-conceitual.puml, ADR-014 (Usuario em tabela única,
+// sem herança) e ADR-015 (ItemRoteiro como associação entre Roteiro e Ponto).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Perfil {
+  ENTREGADOR
+  SUPERVISOR_LOCAL
+  SUPERVISOR_GERAL
+}
+
+enum RoteiroStatus {
+  NAO_INICIADO
+  EM_ANDAMENTO
+  FINALIZADO
+}
+
+enum ItemRoteiroStatus {
+  PENDENTE
+  AGUARDANDO_SAIDA
+  CONCLUIDO
+}
+
+enum PlanoAssinatura {
+  ESSENCIAL
+  PROFISSIONAL
+  ESCALA
+}
+
+enum StatusAssinatura {
+  ATIVA
+  CANCELADA
+}
+
+enum TipoCombustivel {
+  GASOLINA
+  DIESEL
+}
+
+model Estabelecimento {
+  id        String   @id @default(uuid())
+  nome      String
+  createdAt DateTime @default(now())
+
+  unidades  Unidade[]
+  usuarios  Usuario[]
+  auditoria Auditoria[]
+  assinatura Assinatura?
+
+  @@map("estabelecimentos")
+}
+
+model Assinatura {
+  id                String           @id @default(uuid())
+  estabelecimentoId String           @unique
+  plano             PlanoAssinatura
+  status            StatusAssinatura @default(ATIVA)
+  valorMensal       Decimal          @db.Decimal(10, 2)
+  proximaCobranca   DateTime
+  pagamentoMock     Boolean          @default(true)
+  cartaoFinal       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id])
+
+  @@map("assinaturas")
+}
+
+model Unidade {
+  id                String   @id @default(uuid())
+  estabelecimentoId String
+  nome              String
+  endereco          String
+  fusoHorario       String
+  createdAt         DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id])
+  usuarios        Usuario[]
+  pontos          Ponto[]
+  roteiros        Roteiro[]
+  parametro       Parametro?
+
+  // UC01, passo 3: nome único dentro do Estabelecimento.
+  @@unique([estabelecimentoId, nome])
+  @@index([estabelecimentoId])
+  @@map("unidades")
+}
+
+model Usuario {
+  id                String   @id @default(uuid())
+  estabelecimentoId String
+  unidadeId         String?
+  email             String
+  senhaHash         String
+  perfil            Perfil
+  ativo             Boolean  @default(true)
+  nome              String
+  telefone          String?
+  // Campos específicos de Entregador (ADR-014: Usuario é tabela única, sem herança física)
+  documento         String?
+  veiculo           String?
+  tipoCombustivel   TipoCombustivel?
+  rendimentoKmLitro Decimal? @db.Decimal(10, 2)
+  // UC02/UC06: usuário criado por um Supervisor fica "Convite pendente" até definir a
+  // própria senha (senhaHash inicial é um hash aleatório, nunca conhecido por ninguém).
+  senhaDefinida        Boolean   @default(false)
+  tokenConvite         String?   @unique
+  tokenConviteExpiraEm DateTime?
+  createdAt            DateTime  @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id])
+  unidade         Unidade?        @relation(fields: [unidadeId], references: [id])
+  roteiros        Roteiro[]       @relation("RoteirosDoEntregador")
+  auditorias      Auditoria[]     @relation("AutorAuditoria")
+
+  // UC00: login recebe só e-mail/senha, sem indicar o Estabelecimento — o e-mail precisa
+  // ser único no sistema todo para resolver univocamente o Usuario (e seu tenant).
+  @@unique([email])
+  // UC06, fluxo alternativo 3a: CPF único por Estabelecimento (NULL não conflita — só
+  // Entregadores têm documento preenchido).
+  @@unique([estabelecimentoId, documento])
+  @@index([unidadeId])
+  @@index([estabelecimentoId])
+  @@map("usuarios")
+}
+
+model Parametro {
+  id                 String   @id @default(uuid())
+  unidadeId          String   @unique
+  valorCombustivel   Decimal  @db.Decimal(10, 2)
+  custoPorKm         Decimal  @db.Decimal(10, 2)
+  jornadaPadraoHoras Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  unidade Unidade @relation(fields: [unidadeId], references: [id])
+
+  @@map("parametros")
+}
+
+model Ponto {
+  id                String   @id @default(uuid())
+  estabelecimentoId String
+  unidadeId         String
+  endereco          String
+  latitude          Decimal  @db.Decimal(9, 6)
+  longitude         Decimal  @db.Decimal(9, 6)
+  createdAt         DateTime @default(now())
+
+  unidade      Unidade        @relation(fields: [unidadeId], references: [id])
+  itensRoteiro ItemRoteiro[]
+
+  @@index([unidadeId])
+  @@index([estabelecimentoId])
+  @@map("pontos")
+}
+
+model Roteiro {
+  id                     String        @id @default(uuid())
+  estabelecimentoId      String
+  unidadeId              String
+  entregadorId           String
+  data                   DateTime      @db.Date
+  status                 RoteiroStatus @default(NAO_INICIADO)
+  horaInicio             DateTime?
+  horaTermino            DateTime?
+  tempoTotalParadoMin    Int?
+  distanciaTotalKm       Decimal?      @db.Decimal(10, 3)
+  custoEstimado          Decimal?      @db.Decimal(10, 2)
+  receitaBruta           Decimal?      @db.Decimal(10, 2)
+  createdAt              DateTime      @default(now())
+
+  unidade    Unidade       @relation(fields: [unidadeId], references: [id])
+  entregador Usuario       @relation("RoteirosDoEntregador", fields: [entregadorId], references: [id])
+  itens      ItemRoteiro[]
+
+  @@unique([entregadorId, data])
+  @@index([unidadeId, data])
+  @@index([estabelecimentoId])
+  @@map("roteiros")
+}
+
+model ItemRoteiro {
+  id                String            @id @default(uuid())
+  roteiroId         String
+  pontoId           String
+  ordem             Int
+  horaChegada       DateTime?
+  horaSaida         DateTime?
+  tempoParadoMin    Int?
+  chegadaLatitude       Decimal? @db.Decimal(9, 6)
+  chegadaLongitude      Decimal? @db.Decimal(9, 6)
+  chegadaPrecisaoMetros Decimal? @db.Decimal(8, 2)
+  chegadaCapturadaEm    DateTime?
+  saidaLatitude         Decimal? @db.Decimal(9, 6)
+  saidaLongitude        Decimal? @db.Decimal(9, 6)
+  saidaPrecisaoMetros   Decimal? @db.Decimal(8, 2)
+  saidaCapturadaEm      DateTime?
+  status            ItemRoteiroStatus @default(PENDENTE)
+  createdAt         DateTime          @default(now())
+
+  roteiro    Roteiro     @relation(fields: [roteiroId], references: [id])
+  ponto      Ponto       @relation(fields: [pontoId], references: [id])
+  auditorias Auditoria[]
+
+  @@unique([roteiroId, ordem])
+  @@index([pontoId])
+  @@map("itens_roteiro")
+}
+
+// Nonce de uso único vinculado a uma ação de localização. Impede que uma
+// requisição de registro capturada seja repetida em outro momento ou alvo.
+model DesafioLocalizacao {
+  id         String    @id @default(uuid())
+  usuarioId  String
+  tipo       String
+  alvoId     String
+  expiraEm   DateTime
+  consumidoEm DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([usuarioId, alvoId, tipo])
+  @@index([expiraEm])
+  @@map("desafios_localizacao")
+}
+
+model Auditoria {
+  id                String   @id @default(uuid())
+  estabelecimentoId String
+  autorId           String
+  itemRoteiroId     String?
+  dataHoraCorrecao  DateTime @default(now())
+  entidade          String
+  campo             String
+  valorAnterior     String
+  valorNovo         String
+  // Obrigatória na correção de horários (UC16); UC05 (troca de perfil/Unidade) não pede
+  // justificativa no fluxo, por isso o campo é opcional no schema.
+  justificativa     String?
+  createdAt         DateTime @default(now())
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id])
+  autor           Usuario         @relation("AutorAuditoria", fields: [autorId], references: [id])
+  itemRoteiro     ItemRoteiro?    @relation(fields: [itemRoteiroId], references: [id])
+
+  @@index([estabelecimentoId])
+  @@index([itemRoteiroId])
+  @@map("auditoria")
+}

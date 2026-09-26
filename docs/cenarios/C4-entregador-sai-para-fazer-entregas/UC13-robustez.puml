@@ -1,0 +1,22 @@
+@startuml UC13-robustez
+title UC13 — Registrar saída do ponto (Robustez)
+
+actor Entregador
+boundary TelaRegistroDePonto
+control RegistrarSaidaController
+control CalculadoraTempoParado
+entity Ponto
+entity Roteiro
+
+Entregador -> TelaRegistroDePonto : 1. confirmar "Registrar saída"
+TelaRegistroDePonto -> RegistrarSaidaController : 2. registrarSaida(pontoId, horaAtual)
+RegistrarSaidaController -> Ponto : 3. verificar horaChegada preenchida e horaSaida vazia
+RegistrarSaidaController -> Ponto : 4. gravar horaSaida
+RegistrarSaidaController -> CalculadoraTempoParado : 5. calcularTempoParado(pontoId) «include UC15»
+CalculadoraTempoParado -> Ponto : 6. ler horaChegada, horaSaida, ordem
+CalculadoraTempoParado -> Ponto : 7. gravar tempoParado (RN01/RN02)
+RegistrarSaidaController -> Roteiro : 8. liberar próximo ponto da sequência (RN06)
+RegistrarSaidaController -> TelaRegistroDePonto : 9. retornar confirmação
+TelaRegistroDePonto -> Entregador : 10. exibir próximo ponto pendente
+
+@enduml

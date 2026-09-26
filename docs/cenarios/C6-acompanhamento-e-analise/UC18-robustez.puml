@@ -1,0 +1,21 @@
+@startuml UC18-robustez
+title UC18 — Visualizar dashboard de tempo parado (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaDashboard
+control DashboardController
+entity Roteiro
+
+SupervisorLocal -> TelaDashboard : 1. acessar dashboard
+TelaDashboard -> DashboardController : 2. obterDashboard(unidadeId, recorte=dia)
+DashboardController -> Roteiro : 3. buscar roteiros finalizados (unidadeId, data)
+DashboardController -> TelaDashboard : 4. retornar dados agregados
+TelaDashboard -> SupervisorLocal : 5. exibir gráfico (recorte dia)
+
+SupervisorLocal -> TelaDashboard : 6. selecionar recorte (mês/período)
+TelaDashboard -> DashboardController : 7. obterDashboard(unidadeId, recorte)
+DashboardController -> Roteiro : 8. buscar roteiros finalizados (unidadeId, intervalo)
+DashboardController -> TelaDashboard : 9. retornar dados agregados
+TelaDashboard -> SupervisorLocal : 10. exibir gráfico atualizado
+
+@enduml

@@ -1,0 +1,24 @@
+@startuml UC05-robustez
+title UC05 — Gerenciar perfis de acesso (Robustez)
+
+actor "Supervisor geral" as SupervisorGeral
+boundary TelaGerenciarPerfis
+control GerenciarPerfilController
+entity Supervisor
+entity Entregador
+entity Unidade
+entity Auditoria
+
+SupervisorGeral -> TelaGerenciarPerfis : 1. buscar usuário
+TelaGerenciarPerfis -> GerenciarPerfilController : 2. buscarUsuario(termo)
+GerenciarPerfilController -> Supervisor : 3. ler perfil/unidade atuais
+GerenciarPerfilController -> Entregador : 3. ler perfil/unidade atuais
+SupervisorGeral -> TelaGerenciarPerfis : 4. selecionar novo perfil/unidade
+TelaGerenciarPerfis -> GerenciarPerfilController : 5. atualizarPerfil(usuarioId, perfil, unidadeId)
+GerenciarPerfilController -> Unidade : 6. validar unidade do mesmo estabelecimento
+GerenciarPerfilController -> Supervisor : 7. gravar perfil/unidade
+GerenciarPerfilController -> Auditoria : 8. registrar alteração (autor, antes, depois)
+GerenciarPerfilController -> TelaGerenciarPerfis : 9. retornar confirmação
+TelaGerenciarPerfis -> SupervisorGeral : 10. exibir perfil atualizado
+
+@enduml

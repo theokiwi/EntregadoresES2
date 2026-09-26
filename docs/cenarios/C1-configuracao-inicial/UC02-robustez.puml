@@ -1,0 +1,18 @@
+@startuml UC02-robustez
+title UC02 — Cadastrar supervisor local (Robustez)
+
+actor "Supervisor geral" as SupervisorGeral
+boundary TelaCadastroSupervisor
+control CadastrarSupervisorController
+entity Supervisor
+entity Unidade
+
+SupervisorGeral -> TelaCadastroSupervisor : 1. informar nome, telefone, e-mail, unidade
+TelaCadastroSupervisor -> CadastrarSupervisorController : 2. cadastrarSupervisorLocal(dados)
+CadastrarSupervisorController -> Unidade : 3. validar unidade pertence ao estabelecimento
+CadastrarSupervisorController -> Supervisor : 4. verificar e-mail único no estabelecimento
+CadastrarSupervisorController -> Supervisor : 5. gravar usuário (perfil=SupervisorLocal, status=ConvitePendente)
+CadastrarSupervisorController -> TelaCadastroSupervisor : 6. retornar confirmação (convite enviado)
+TelaCadastroSupervisor -> SupervisorGeral : 7. exibir supervisor cadastrado
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml UC01-robustez
+title UC01 — Cadastrar unidade (Robustez)
+
+actor "Supervisor geral" as SupervisorGeral
+boundary TelaCadastroUnidade
+control CadastrarUnidadeController
+entity Unidade
+entity Estabelecimento
+
+SupervisorGeral -> TelaCadastroUnidade : 1. informar nome, endereço, fuso horário
+TelaCadastroUnidade -> CadastrarUnidadeController : 2. cadastrarUnidade(dados, estabelecimentoId)
+CadastrarUnidadeController -> Estabelecimento : 3. validar estabelecimento do supervisor
+CadastrarUnidadeController -> Unidade : 4. verificar nome único no estabelecimento
+CadastrarUnidadeController -> Unidade : 5. gravar unidade
+CadastrarUnidadeController -> TelaCadastroUnidade : 6. retornar confirmação
+TelaCadastroUnidade -> SupervisorGeral : 7. exibir unidade cadastrada
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml UC12-robustez
+title UC12 — Registrar chegada no ponto (Robustez)
+
+actor Entregador
+boundary TelaRegistroDePonto
+control RegistrarChegadaController
+entity Roteiro
+entity Ponto
+
+Entregador -> TelaRegistroDePonto : 1. abrir ponto atual
+TelaRegistroDePonto -> RegistrarChegadaController : 2. verificarProximoPonto(roteiroId)
+RegistrarChegadaController -> Roteiro : 3. ler ordem e status dos pontos
+Entregador -> TelaRegistroDePonto : 4. confirmar "Registrar chegada"
+TelaRegistroDePonto -> RegistrarChegadaController : 5. registrarChegada(pontoId, horaAtual)
+RegistrarChegadaController -> Ponto : 6. gravar horaChegada, status = AguardandoSaida
+RegistrarChegadaController -> TelaRegistroDePonto : 7. retornar confirmação
+TelaRegistroDePonto -> Entregador : 8. exibir chegada registrada
+
+@enduml

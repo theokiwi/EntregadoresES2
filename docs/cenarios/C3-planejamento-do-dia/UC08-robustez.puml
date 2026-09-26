@@ -1,0 +1,22 @@
+@startuml UC08-robustez
+title UC08 — Registrar pedidos/endereços de entrega (Robustez)
+
+actor "Supervisor local" as SupervisorLocal
+boundary TelaRegistroDePedidos
+control RegistrarPedidoController
+control CadastrarPontoController
+entity Ponto
+
+SupervisorLocal -> TelaRegistroDePedidos : 1. informar endereço do pedido
+TelaRegistroDePedidos -> RegistrarPedidoController : 2. registrarEndereco(endereco, unidadeId)
+RegistrarPedidoController -> Ponto : 3. buscar ponto por endereço na unidade
+
+alt ponto não encontrado
+  RegistrarPedidoController -> CadastrarPontoController : 4. cadastrarPonto(endereco) «include UC07 (condicional)»
+  CadastrarPontoController -> Ponto : 5. criar novo ponto (RF03, coordenadas obrigatórias)
+end
+
+RegistrarPedidoController -> TelaRegistroDePedidos : 6. retornar ponto disponível
+TelaRegistroDePedidos -> SupervisorLocal : 7. confirmar registro
+
+@enduml

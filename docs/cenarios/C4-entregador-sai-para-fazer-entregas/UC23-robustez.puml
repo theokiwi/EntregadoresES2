@@ -1,0 +1,20 @@
+@startuml UC23-robustez
+title UC23 — Calcular distância e custo do roteiro (Robustez)
+
+control FinalizarRoteiroController as UC14
+control CalculadoraDistanciaCusto
+entity Ponto
+entity Roteiro
+entity Entregador
+entity Parametro
+
+UC14 -> CalculadoraDistanciaCusto : 1. calcularDistanciaECusto(roteiroId)
+CalculadoraDistanciaCusto -> Roteiro : 2. ler pontos ordenados (RN06)
+CalculadoraDistanciaCusto -> Ponto : 3. ler latitude/longitude de cada ponto
+CalculadoraDistanciaCusto -> CalculadoraDistanciaCusto : 4. somar distâncias consecutivas (Haversine)
+CalculadoraDistanciaCusto -> Entregador : 5. ler rendimentoKmLitro
+CalculadoraDistanciaCusto -> Parametro : 6. ler valorCombustivel
+CalculadoraDistanciaCusto -> CalculadoraDistanciaCusto : 7. calcular custoEstimado (RN07)
+CalculadoraDistanciaCusto -> UC14 : 8. retornar distanciaTotal, custoEstimado
+
+@enduml
