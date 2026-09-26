@@ -19,9 +19,11 @@ import {
   calcularTempoTotalParadoMinutos,
   ehPontoDePartida,
 } from '../common/calculos/tempo-parado';
+import { paraDataSemHora } from '../common/data';
 import { ParametroRepository } from '../common/repositorios/parametro.repository';
 import { PontoRepository } from '../common/repositorios/ponto.repository';
 import {
+  ItemComRoteiro,
   RoteiroComItens,
   RoteiroRepository,
 } from '../common/repositorios/roteiro.repository';
@@ -30,12 +32,17 @@ import { UsuarioRepository } from '../common/repositorios/usuario.repository';
 import { resolverUnidadeAlvo } from '../common/tenant/resolver-unidade-alvo';
 import { TenantContextService } from '../common/tenant/tenant-context.service';
 import { MontarRoteiroDto } from './dto/montar-roteiro.dto';
+import { LocalizacaoDto } from './dto/localizacao.dto';
+import {
+  CriarDesafioLocalizacaoDto,
+  TipoDesafioLocalizacao,
+} from './dto/criar-desafio-localizacao.dto';
 
-/** Normaliza para meia-noite UTC — coluna @db.Date não guarda hora. */
-function paraDataSemHora(valor: string | Date): Date {
-  const iso = typeof valor === 'string' ? valor : valor.toISOString();
-  return new Date(iso.slice(0, 10));
-}
+const IDADE_MAXIMA_LOCALIZACAO_MS = 30_000;
+const TOLERANCIA_RELOGIO_FUTURO_MS = 5_000;
+const RAIO_MAXIMO_REGISTRO_METROS = 150;
+const VALIDADE_DESAFIO_MS = 60_000;
+const VELOCIDADE_MAXIMA_PLAUSIVEL_KMH = 180;
 
 /**
  * UC09 — Montar roteiro diário; UC10 — Consultar roteiro do dia; UC11 — Iniciar roteiro;
@@ -101,6 +108,7 @@ export class RoteirosService {
       entregadorId: entregador.id,
       data,
       pontoIds: dto.pontoIds,
+      receitaBruta: dto.receitaBruta,
     });
   }
 
@@ -132,6 +140,12 @@ export class RoteirosService {
     ) {
       throw new ForbiddenException('Você só pode consultar o próprio roteiro.');
     }
+    if (
+      tenant.perfil === Perfil.SUPERVISOR_LOCAL &&
+      roteiro.unidadeId !== tenant.unidadeId
+    ) {
+      throw new ForbiddenException('Roteiro não pertence à sua Unidade.');
+    }
     return roteiro;
   }
 
@@ -153,7 +167,40 @@ export class RoteirosService {
     return roteiro;
   }
 
-  async iniciar(tenant: TenantContextService, roteiroId: string) {
+  async criarDesafioLocalizacao(
+    tenant: TenantContextService,
+    dto: CriarDesafioLocalizacaoDto,
+  ) {
+    if (dto.tipo === 'INICIAR_ROTEIRO') {
+      await this.buscarRoteiroDoProprioEntregador(tenant, dto.alvoId);
+    } else {
+      const item = await this.roteiros.buscarItemComRoteiro(
+        tenant.estabelecimentoId,
+        dto.alvoId,
+      );
+      if (!item) {
+        throw new NotFoundException('Ponto do roteiro não encontrado.');
+      }
+      if (item.roteiro.entregadorId !== tenant.usuarioId) {
+        throw new ForbiddenException('Você só pode operar o próprio roteiro.');
+      }
+    }
+
+    const agora = new Date();
+    const desafio = await this.roteiros.criarDesafioLocalizacao({
+      usuarioId: tenant.usuarioId,
+      tipo: dto.tipo,
+      alvoId: dto.alvoId,
+      expiraEm: new Date(agora.getTime() + VALIDADE_DESAFIO_MS),
+    });
+    return { id: desafio.id, expiraEm: desafio.expiraEm };
+  }
+
+  async iniciar(
+    tenant: TenantContextService,
+    roteiroId: string,
+    localizacao: LocalizacaoDto,
+  ) {
     const roteiro = await this.buscarRoteiroDoProprioEntregador(
       tenant,
       roteiroId,
@@ -166,14 +213,26 @@ export class RoteirosService {
 
     const agora = new Date();
     const partida = roteiro.itens[0];
+    this.validarLocalizacao(localizacao, partida.ponto, agora);
+    await this.validarEConsumirDesafio(
+      tenant,
+      localizacao,
+      'INICIAR_ROTEIRO',
+      roteiro.id,
+      agora,
+    );
     await this.roteiros.iniciarRoteiro(roteiro.id, agora);
     // RN01, RN06: ponto de partida (ordem 1) marcado visitado, sem tempo parado.
-    await this.roteiros.concluirPontoDePartida(partida.id, agora);
+    await this.roteiros.concluirPontoDePartida(partida.id, agora, localizacao);
 
     return this.roteiros.buscarComItens(tenant.estabelecimentoId, roteiroId);
   }
 
-  async registrarChegada(tenant: TenantContextService, itemRoteiroId: string) {
+  async registrarChegada(
+    tenant: TenantContextService,
+    itemRoteiroId: string,
+    localizacao: LocalizacaoDto,
+  ) {
     const item = await this.roteiros.buscarItemComRoteiro(
       tenant.estabelecimentoId,
       itemRoteiroId,
@@ -207,14 +266,28 @@ export class RoteirosService {
       );
     }
 
-    await this.roteiros.registrarChegadaItem(item.id, new Date());
+    const agora = new Date();
+    this.validarLocalizacao(localizacao, item.ponto, agora);
+    this.validarDeslocamentoAteOPonto(item, localizacao, agora);
+    await this.validarEConsumirDesafio(
+      tenant,
+      localizacao,
+      'REGISTRAR_CHEGADA',
+      item.id,
+      agora,
+    );
+    await this.roteiros.registrarChegadaItem(item.id, agora, localizacao);
     return this.roteiros.buscarComItens(
       tenant.estabelecimentoId,
       item.roteiroId,
     );
   }
 
-  async registrarSaida(tenant: TenantContextService, itemRoteiroId: string) {
+  async registrarSaida(
+    tenant: TenantContextService,
+    itemRoteiroId: string,
+    localizacao: LocalizacaoDto,
+  ) {
     const item = await this.roteiros.buscarItemComRoteiro(
       tenant.estabelecimentoId,
       itemRoteiroId,
@@ -238,11 +311,24 @@ export class RoteirosService {
     }
 
     const agora = new Date();
+    this.validarLocalizacao(localizacao, item.ponto, agora);
+    await this.validarEConsumirDesafio(
+      tenant,
+      localizacao,
+      'REGISTRAR_SAIDA',
+      item.id,
+      agora,
+    );
     // UC15, modo "por ponto" (RN01/RN02).
     const tempoParadoMin = ehPontoDePartida(item.ordem)
       ? null
       : calcularTempoParadoMinutos(item.horaChegada!, agora);
-    await this.roteiros.registrarSaidaItem(item.id, agora, tempoParadoMin);
+    await this.roteiros.registrarSaidaItem(
+      item.id,
+      agora,
+      tempoParadoMin,
+      localizacao,
+    );
 
     const roteiroAtualizado = await this.roteiros.buscarComItens(
       tenant.estabelecimentoId,
@@ -256,6 +342,99 @@ export class RoteirosService {
       return this.finalizarComTotais(tenant, roteiroAtualizado!);
     }
     return roteiroAtualizado;
+  }
+
+  private validarLocalizacao(
+    localizacao: LocalizacaoDto,
+    ponto: { latitude: unknown; longitude: unknown },
+    agora: Date,
+  ) {
+    const capturadaEm = new Date(localizacao.capturadaEm);
+    const idade = agora.getTime() - capturadaEm.getTime();
+    if (
+      idade > IDADE_MAXIMA_LOCALIZACAO_MS ||
+      idade < -TOLERANCIA_RELOGIO_FUTURO_MS
+    ) {
+      throw new BadRequestException(
+        'A localização expirou. Ative a localização e tente novamente.',
+      );
+    }
+
+    const distanciaMetros =
+      calcularDistanciaTotalKm([
+        {
+          latitude: localizacao.latitude,
+          longitude: localizacao.longitude,
+        },
+        {
+          latitude: Number(ponto.latitude),
+          longitude: Number(ponto.longitude),
+        },
+      ]) * 1000;
+    if (distanciaMetros > RAIO_MAXIMO_REGISTRO_METROS) {
+      throw new BadRequestException(
+        `Registro permitido somente no local do ponto (distância atual: ${Math.round(distanciaMetros)} m).`,
+      );
+    }
+  }
+
+  private async validarEConsumirDesafio(
+    tenant: TenantContextService,
+    localizacao: LocalizacaoDto,
+    tipo: TipoDesafioLocalizacao,
+    alvoId: string,
+    agora: Date,
+  ) {
+    const consumido = await this.roteiros.consumirDesafioLocalizacao({
+      id: localizacao.desafioId,
+      usuarioId: tenant.usuarioId,
+      tipo,
+      alvoId,
+      agora,
+    });
+    if (!consumido) {
+      throw new BadRequestException(
+        'A autorização de localização expirou ou já foi utilizada. Tente novamente.',
+      );
+    }
+  }
+
+  private validarDeslocamentoAteOPonto(
+    item: ItemComRoteiro,
+    localizacao: LocalizacaoDto,
+    agora: Date,
+  ) {
+    const anterior = item.roteiro?.itens?.find(
+      (candidato) => candidato.ordem === item.ordem - 1,
+    );
+    if (
+      !anterior?.horaSaida ||
+      anterior.saidaLatitude === null ||
+      anterior.saidaLongitude === null
+    ) {
+      return;
+    }
+
+    const horasDecorridas =
+      (agora.getTime() - anterior.horaSaida.getTime()) / 3_600_000;
+    const distanciaKm = calcularDistanciaTotalKm([
+      {
+        latitude: Number(anterior.saidaLatitude),
+        longitude: Number(anterior.saidaLongitude),
+      },
+      {
+        latitude: localizacao.latitude,
+        longitude: localizacao.longitude,
+      },
+    ]);
+    const velocidadeKmH =
+      horasDecorridas > 0 ? distanciaKm / horasDecorridas : Infinity;
+
+    if (velocidadeKmH > VELOCIDADE_MAXIMA_PLAUSIVEL_KMH) {
+      throw new BadRequestException(
+        'Deslocamento incompatível com a última localização registrada. Aguarde uma nova leitura de GPS.',
+      );
+    }
   }
 
   async finalizar(tenant: TenantContextService, roteiroId: string) {

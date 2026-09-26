@@ -2,6 +2,12 @@
 
 Índice da documentação de análise, arquitetura e design do MVP de Monitoramento de Tempo Parado em Roteiros. Fonte de verdade da especificação: [`referencia/especificacao-requisitos.pdf`](referencia/especificacao-requisitos.pdf).
 
+## Negócio e lançamento
+
+- [`custos-e-precificacao.md`](custos-e-precificacao.md) — memória de cálculo técnica.
+- [`custos/plano-custos-precificacao.pdf`](custos/plano-custos-precificacao.pdf) — plano visual executivo de custos, margens e assinaturas.
+- [`marketing/campanha-rotaagil.pdf`](marketing/campanha-rotaagil.pdf) — plano visual da campanha de lançamento.
+
 ## Como ler
 
 1. [`constituicao.md`](constituicao.md) — princípios que valem para todo o projeto.

@@ -5,6 +5,7 @@ export const api = axios.create({
 });
 
 const TOKEN_STORAGE_KEY = 'entregadores.accessToken';
+export const SESSAO_STORAGE_KEY = 'entregadores.sessao';
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -25,3 +26,15 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem(SESSAO_STORAGE_KEY);
+      window.location.assign('/login?motivo=sessao-expirada');
+    }
+    return Promise.reject(error);
+  },
+);

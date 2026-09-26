@@ -1,9 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import * as authApi from '../api/auth';
-import { getAccessToken, setAccessToken } from '../api/client';
+import { getAccessToken, setAccessToken, SESSAO_STORAGE_KEY } from '../api/client';
 import type { Sessao } from '../api/types';
-
-const SESSAO_STORAGE_KEY = 'entregadores.sessao';
 
 interface AuthContextValue {
   sessao: Sessao | null;

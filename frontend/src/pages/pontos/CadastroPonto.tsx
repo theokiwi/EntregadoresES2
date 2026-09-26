@@ -5,6 +5,7 @@ import { criarPonto, listarPontos } from '../../api/pontos';
 import { listarUnidades } from '../../api/unidades';
 import { useAuth } from '../../auth/AuthContext';
 import { Card, ErrorText, Field, inputClass, PrimaryButton, SuccessText } from '../../components/ui';
+import { AddressPicker } from '../../components/AddressPicker';
 
 /** UC07 — Cadastrar ponto: TelaCadastroPonto. */
 export function CadastroPonto() {
@@ -73,7 +74,15 @@ export function CadastroPonto() {
             </Field>
           )}
           <Field label="Endereço">
-            <input required value={endereco} onChange={(e) => setEndereco(e.target.value)} className={inputClass} />
+            <AddressPicker
+              required
+              value={endereco}
+              onChange={setEndereco}
+              onCoordinatesChange={({ latitude: lat, longitude: lng }) => {
+                setLatitude(lat.toFixed(6));
+                setLongitude(lng.toFixed(6));
+              }}
+            />
           </Field>
           <Field label="Latitude">
             <input
@@ -108,7 +117,7 @@ export function CadastroPonto() {
       </Card>
 
       <Card title="Pontos cadastrados">
-        {!unidadeConsultada && <p className="text-sm text-slate-500">Selecione uma Unidade para listar.</p>}
+        {!unidadeConsultada && <p className="text-sm text-stone-500">Selecione uma unidade para listar.</p>}
         <ul className="flex flex-col gap-2 text-sm">
           {pontos.data?.map((ponto) => (
             <li key={ponto.id} className="rounded-md border border-slate-200 px-3 py-2">

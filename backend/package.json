@@ -8,16 +8,22 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prestart": "npm run db:migrate",
     "start": "nest start",
+    "prestart:dev": "npm run db:migrate",
     "start:dev": "nest start --watch",
+    "prestart:prod": "npm run db:migrate",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand"
+    "test:e2e": "node scripts/test-e2e.cjs",
+    "db:migrate": "node scripts/prisma-migrate.cjs",
+    "db:setup": "npm run db:demo",
+    "db:demo": "npm run db:migrate && ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

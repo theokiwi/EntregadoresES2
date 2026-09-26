@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Perfil, Usuario } from '../../../generated/prisma/client';
+import { Perfil, TipoCombustivel, Usuario } from '../../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface CriarUsuarioInput {
@@ -12,6 +12,7 @@ export interface CriarUsuarioInput {
   telefone?: string | null;
   documento?: string | null;
   veiculo?: string | null;
+  tipoCombustivel?: TipoCombustivel | null;
   rendimentoKmLitro?: number | null;
   tokenConvite?: string | null;
   tokenConviteExpiraEm?: Date | null;

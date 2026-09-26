@@ -11,6 +11,7 @@ import { UsuarioRepository } from '../common/repositorios/usuario.repository';
 import { resolverUnidadeAlvo } from '../common/tenant/resolver-unidade-alvo';
 import { TenantContextService } from '../common/tenant/tenant-context.service';
 import { CriarEntregadorDto } from './dto/criar-entregador.dto';
+import { AssinaturasService } from '../assinaturas/assinaturas.service';
 
 const CONVITE_VALIDADE_DIAS = 7;
 
@@ -20,12 +21,17 @@ export class EntregadoresService {
   constructor(
     private readonly usuarios: UsuarioRepository,
     private readonly unidades: UnidadeRepository,
+    private readonly assinaturas: AssinaturasService,
   ) {}
 
   async criar(
     tenant: TenantContextService,
     dto: CriarEntregadorDto,
   ): Promise<Usuario> {
+    await this.assinaturas.validarNovoRecurso(
+      tenant.estabelecimentoId,
+      'entregador',
+    );
     const unidadeId = await resolverUnidadeAlvo(
       tenant,
       this.unidades,
@@ -48,6 +54,7 @@ export class EntregadoresService {
         telefone: dto.telefone,
         documento: dto.documento,
         veiculo: dto.veiculo,
+        tipoCombustivel: dto.tipoCombustivel,
         rendimentoKmLitro: dto.rendimentoKmLitro,
         perfil: Perfil.ENTREGADOR,
         senhaHash: await bcrypt.hash(senhaAleatoria, 10),

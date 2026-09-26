@@ -9,14 +9,17 @@ import { PerfilGuard } from './common/auth/perfil.guard';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { CorrecoesModule } from './correcoes/correcoes.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { EntregadoresModule } from './entregadores/entregadores.module';
 import { ParametrosModule } from './parametros/parametros.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { PerfisModule } from './perfis/perfis.module';
 import { PontosModule } from './pontos/pontos.module';
 import { RoteirosModule } from './roteiros/roteiros.module';
+import { HistoricoModule } from './historico/historico.module';
 import { SupervisoresModule } from './supervisores/supervisores.module';
 import { UnidadesModule } from './unidades/unidades.module';
+import { AssinaturasModule } from './assinaturas/assinaturas.module';
 
 @Module({
   imports: [
@@ -34,6 +37,9 @@ import { UnidadesModule } from './unidades/unidades.module';
     RoteirosModule,
     CorrecoesModule,
     AuditoriaModule,
+    DashboardModule,
+    HistoricoModule,
+    AssinaturasModule,
   ],
   controllers: [AppController],
   providers: [

@@ -4,6 +4,8 @@ import {
   RoteiroStatus,
 } from '../../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { LocalizacaoDto } from '../../roteiros/dto/localizacao.dto';
+import { TipoDesafioLocalizacao } from '../../roteiros/dto/criar-desafio-localizacao.dto';
 
 export interface CriarRoteiroInput {
   estabelecimentoId: string;
@@ -11,6 +13,7 @@ export interface CriarRoteiroInput {
   entregadorId: string;
   data: Date;
   pontoIds: string[];
+  receitaBruta?: number;
 }
 
 export interface FinalizarRoteiroInput {
@@ -26,6 +29,7 @@ const ROTEIRO_COM_ITENS = {
     include: { ponto: true },
   },
   entregador: true,
+  unidade: { include: { parametro: true } },
 };
 
 export type RoteiroComItens = NonNullable<
@@ -39,6 +43,36 @@ export type ItemComRoteiro = NonNullable<
 @Injectable()
 export class RoteiroRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  criarDesafioLocalizacao(input: {
+    usuarioId: string;
+    tipo: TipoDesafioLocalizacao;
+    alvoId: string;
+    expiraEm: Date;
+  }) {
+    return this.prisma.desafioLocalizacao.create({ data: input });
+  }
+
+  async consumirDesafioLocalizacao(input: {
+    id: string;
+    usuarioId: string;
+    tipo: TipoDesafioLocalizacao;
+    alvoId: string;
+    agora: Date;
+  }) {
+    const resultado = await this.prisma.desafioLocalizacao.updateMany({
+      where: {
+        id: input.id,
+        usuarioId: input.usuarioId,
+        tipo: input.tipo,
+        alvoId: input.alvoId,
+        consumidoEm: null,
+        expiraEm: { gte: input.agora },
+      },
+      data: { consumidoEm: input.agora },
+    });
+    return resultado.count === 1;
+  }
 
   // entregadorId já escopa o Estabelecimento (um Entregador pertence a só um).
   findByEntregadorEData(entregadorId: string, data: Date) {
@@ -56,6 +90,7 @@ export class RoteiroRepository {
         entregadorId: input.entregadorId,
         data: input.data,
         status: RoteiroStatus.NAO_INICIADO,
+        receitaBruta: input.receitaBruta,
         itens: {
           create: input.pontoIds.map((pontoId, indice) => ({
             pontoId,
@@ -96,13 +131,25 @@ export class RoteiroRepository {
   }
 
   // UC11, passo 4: ponto de partida marcado visitado, sem tempo parado (RN01).
-  concluirPontoDePartida(itemRoteiroId: string, agora: Date) {
+  concluirPontoDePartida(
+    itemRoteiroId: string,
+    agora: Date,
+    localizacao: LocalizacaoDto,
+  ) {
     return this.prisma.itemRoteiro.update({
       where: { id: itemRoteiroId },
       data: {
         horaChegada: agora,
         horaSaida: agora,
         status: ItemRoteiroStatus.CONCLUIDO,
+        chegadaLatitude: localizacao.latitude,
+        chegadaLongitude: localizacao.longitude,
+        chegadaPrecisaoMetros: localizacao.precisaoMetros,
+        chegadaCapturadaEm: new Date(localizacao.capturadaEm),
+        saidaLatitude: localizacao.latitude,
+        saidaLongitude: localizacao.longitude,
+        saidaPrecisaoMetros: localizacao.precisaoMetros,
+        saidaCapturadaEm: new Date(localizacao.capturadaEm),
       },
     });
   }
@@ -115,10 +162,21 @@ export class RoteiroRepository {
   }
 
   // UC12, passo 4/5.
-  registrarChegadaItem(itemRoteiroId: string, horaChegada: Date) {
+  registrarChegadaItem(
+    itemRoteiroId: string,
+    horaChegada: Date,
+    localizacao: LocalizacaoDto,
+  ) {
     return this.prisma.itemRoteiro.update({
       where: { id: itemRoteiroId },
-      data: { horaChegada, status: ItemRoteiroStatus.AGUARDANDO_SAIDA },
+      data: {
+        horaChegada,
+        status: ItemRoteiroStatus.AGUARDANDO_SAIDA,
+        chegadaLatitude: localizacao.latitude,
+        chegadaLongitude: localizacao.longitude,
+        chegadaPrecisaoMetros: localizacao.precisaoMetros,
+        chegadaCapturadaEm: new Date(localizacao.capturadaEm),
+      },
     });
   }
 
@@ -127,10 +185,19 @@ export class RoteiroRepository {
     itemRoteiroId: string,
     horaSaida: Date,
     tempoParadoMin: number | null,
+    localizacao: LocalizacaoDto,
   ) {
     return this.prisma.itemRoteiro.update({
       where: { id: itemRoteiroId },
-      data: { horaSaida, tempoParadoMin, status: ItemRoteiroStatus.CONCLUIDO },
+      data: {
+        horaSaida,
+        tempoParadoMin,
+        status: ItemRoteiroStatus.CONCLUIDO,
+        saidaLatitude: localizacao.latitude,
+        saidaLongitude: localizacao.longitude,
+        saidaPrecisaoMetros: localizacao.precisaoMetros,
+        saidaCapturadaEm: new Date(localizacao.capturadaEm),
+      },
     });
   }
 
@@ -162,6 +229,30 @@ export class RoteiroRepository {
     return this.prisma.roteiro.update({
       where: { id: roteiroId },
       data: { tempoTotalParadoMin },
+    });
+  }
+
+  // UC18 (dashboard), UC19 (histórico), UC22 (meu histórico): roteiros finalizados no
+  // período, com todos os dados já calculados por UC14/UC15/UC23 — nada é recalculado aqui.
+  listarFinalizadosNoPeriodo(
+    estabelecimentoId: string,
+    filtros: {
+      unidadeId?: string;
+      entregadorId?: string;
+      dataInicial: Date;
+      dataFinal: Date;
+    },
+  ) {
+    return this.prisma.roteiro.findMany({
+      where: {
+        estabelecimentoId,
+        status: RoteiroStatus.FINALIZADO,
+        data: { gte: filtros.dataInicial, lte: filtros.dataFinal },
+        ...(filtros.unidadeId ? { unidadeId: filtros.unidadeId } : {}),
+        ...(filtros.entregadorId ? { entregadorId: filtros.entregadorId } : {}),
+      },
+      include: ROTEIRO_COM_ITENS,
+      orderBy: { data: 'desc' },
     });
   }
 }

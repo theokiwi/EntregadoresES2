@@ -30,6 +30,7 @@ export function MontarRoteiro() {
 
   const [entregadorId, setEntregadorId] = useState('');
   const [data, setData] = useState('');
+  const [receitaBruta, setReceitaBruta] = useState('');
   const [selecionados, setSelecionados] = useState<string[]>([]);
   const [sucesso, setSucesso] = useState(false);
 
@@ -58,6 +59,7 @@ export function MontarRoteiro() {
         data,
         pontoIds: selecionados,
         unidadeId: precisaSelecionarUnidade ? unidadeId : undefined,
+        receitaBruta: receitaBruta === '' ? undefined : Number(receitaBruta),
       }),
     onSuccess: () => {
       setSucesso(true);
@@ -113,6 +115,7 @@ export function MontarRoteiro() {
           <Field label="Data">
             <input type="date" required value={data} onChange={(e) => setData(e.target.value)} className={inputClass} />
           </Field>
+          <Field label="Receita prevista (R$)"><input type="number" min="0" step="0.01" value={receitaBruta} onChange={(e) => setReceitaBruta(e.target.value)} className={inputClass} placeholder="Opcional"/></Field>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -147,13 +150,13 @@ export function MontarRoteiro() {
                     {indice + 1}. {enderecoDoPonto(pontoId)}
                   </span>
                   <span className="flex gap-1">
-                    <button type="button" onClick={() => moverPonto(indice, -1)} className="px-1 text-slate-500">
+                    <button type="button" disabled={indice === 0} aria-label={`Mover ${enderecoDoPonto(pontoId)} para cima`} onClick={() => moverPonto(indice, -1)} className="px-1 text-slate-500 disabled:opacity-30">
                       ↑
                     </button>
-                    <button type="button" onClick={() => moverPonto(indice, 1)} className="px-1 text-slate-500">
+                    <button type="button" disabled={indice === selecionados.length - 1} aria-label={`Mover ${enderecoDoPonto(pontoId)} para baixo`} onClick={() => moverPonto(indice, 1)} className="px-1 text-slate-500 disabled:opacity-30">
                       ↓
                     </button>
-                    <button type="button" onClick={() => removerPonto(pontoId)} className="px-1 text-red-600">
+                    <button type="button" aria-label={`Remover ${enderecoDoPonto(pontoId)} do roteiro`} onClick={() => removerPonto(pontoId)} className="px-1 text-red-600">
                       ×
                     </button>
                   </span>

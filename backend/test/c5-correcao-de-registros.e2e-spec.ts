@@ -9,6 +9,30 @@ import {
   login,
 } from './support/fixtures';
 
+async function localizacaoAutorizada(
+  usuarioId: string,
+  tipo: 'INICIAR_ROTEIRO' | 'REGISTRAR_CHEGADA' | 'REGISTRAR_SAIDA',
+  alvoId: string,
+  latitude: number,
+  longitude: number,
+) {
+  const desafio = await prisma.desafioLocalizacao.create({
+    data: {
+      usuarioId,
+      tipo,
+      alvoId,
+      expiraEm: new Date(Date.now() + 60_000),
+    },
+  });
+  return {
+    desafioId: desafio.id,
+    latitude,
+    longitude,
+    precisaoMetros: 5,
+    capturadaEm: new Date().toISOString(),
+  };
+}
+
 async function montarERodarRoteiroCompleto(
   app: INestApplication,
   params: {
@@ -32,16 +56,48 @@ async function montarERodarRoteiroCompleto(
   await request(app.getHttpServer())
     .post(`/roteiros/${roteiro.body.id}/iniciar`)
     .set('Authorization', `Bearer ${params.tokenEntregador}`)
+    .send(
+      await localizacaoAutorizada(
+        params.entregadorId,
+        'INICIAR_ROTEIRO',
+        roteiro.body.id,
+        -19.9,
+        -43.9,
+      ),
+    )
     .expect(201);
+
+  await prisma.itemRoteiro.update({
+    where: { id: roteiro.body.itens[0].id },
+    data: { horaSaida: new Date(Date.now() - 60_000) },
+  });
 
   const itemB = roteiro.body.itens[1].id;
   await request(app.getHttpServer())
     .post(`/roteiros/itens/${itemB}/chegada`)
     .set('Authorization', `Bearer ${params.tokenEntregador}`)
+    .send(
+      await localizacaoAutorizada(
+        params.entregadorId,
+        'REGISTRAR_CHEGADA',
+        itemB,
+        -19.91,
+        -43.91,
+      ),
+    )
     .expect(201);
   const finalRes = await request(app.getHttpServer())
     .post(`/roteiros/itens/${itemB}/saida`)
     .set('Authorization', `Bearer ${params.tokenEntregador}`)
+    .send(
+      await localizacaoAutorizada(
+        params.entregadorId,
+        'REGISTRAR_SAIDA',
+        itemB,
+        -19.91,
+        -43.91,
+      ),
+    )
     .expect(201);
 
   return {
@@ -134,11 +190,33 @@ describe('C5 — Correção de registros (e2e)', () => {
       await request(app.getHttpServer())
         .post(`/roteiros/${roteiro.body.id}/iniciar`)
         .set('Authorization', `Bearer ${tokenEntregador}`)
+        .send(
+          await localizacaoAutorizada(
+            entregadorId,
+            'INICIAR_ROTEIRO',
+            roteiro.body.id,
+            -19.9,
+            -43.9,
+          ),
+        )
         .expect(201);
+      await prisma.itemRoteiro.update({
+        where: { id: roteiro.body.itens[0].id },
+        data: { horaSaida: new Date(Date.now() - 60_000) },
+      });
       itemBId = roteiro.body.itens[1].id;
       await request(app.getHttpServer())
         .post(`/roteiros/itens/${itemBId}/chegada`)
         .set('Authorization', `Bearer ${tokenEntregador}`)
+        .send(
+          await localizacaoAutorizada(
+            entregadorId,
+            'REGISTRAR_CHEGADA',
+            itemBId,
+            -19.91,
+            -43.91,
+          ),
+        )
         .expect(201);
       // Não registra saída aqui — mantém o roteiro "Em andamento" para este bloco de testes.
     });
@@ -183,6 +261,15 @@ describe('C5 — Correção de registros (e2e)', () => {
       await request(app.getHttpServer())
         .post(`/roteiros/itens/${itemBId}/saida`)
         .set('Authorization', `Bearer ${tokenEntregador}`)
+        .send(
+          await localizacaoAutorizada(
+            entregadorId,
+            'REGISTRAR_SAIDA',
+            itemBId,
+            -19.91,
+            -43.91,
+          ),
+        )
         .expect(201);
 
       const itemAtual = await prisma.itemRoteiro.findUniqueOrThrow({

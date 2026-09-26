@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { criarUnidade, listarUnidades } from '../../api/unidades';
 import { mensagemDeErro } from '../../api/error';
 import { Card, ErrorText, Field, inputClass, PrimaryButton, SuccessText } from '../../components/ui';
+import { AddressPicker } from '../../components/AddressPicker';
 
 /** UC01 — Cadastrar unidade: TelaCadastroUnidade. */
 export function CadastroUnidade() {
@@ -38,7 +39,7 @@ export function CadastroUnidade() {
             <input required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} />
           </Field>
           <Field label="Endereço">
-            <input required value={endereco} onChange={(e) => setEndereco(e.target.value)} className={inputClass} />
+            <AddressPicker required value={endereco} onChange={setEndereco} />
           </Field>
           <Field label="Fuso horário">
             <input
