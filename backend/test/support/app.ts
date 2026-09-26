@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 
-/** Sobe a aplicação real (mesmos pipes globais de main.ts) contra o Postgres de dev. */
+/** Sobe a aplicação real contra o schema isolado preparado pelo runner E2E. */
 export async function criarApp(): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsEnum,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -7,6 +8,7 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
+import { TipoCombustivel } from '../../../generated/prisma/client';
 
 export class CriarEntregadorDto {
   @IsString()
@@ -37,6 +39,10 @@ export class CriarEntregadorDto {
   @IsString()
   @IsNotEmpty()
   veiculo: string;
+
+  @IsOptional()
+  @IsEnum(TipoCombustivel)
+  tipoCombustivel?: TipoCombustivel;
 
   @IsPositive()
   rendimentoKmLitro: number;

@@ -23,6 +23,7 @@ export function CadastroEntregador() {
   const [telefone, setTelefone] = useState('');
   const [documento, setDocumento] = useState('');
   const [veiculo, setVeiculo] = useState('');
+  const [tipoCombustivel, setTipoCombustivel] = useState<'GASOLINA' | 'DIESEL'>('GASOLINA');
   const [rendimentoKmLitro, setRendimentoKmLitro] = useState('');
   const [sucesso, setSucesso] = useState(false);
 
@@ -40,6 +41,7 @@ export function CadastroEntregador() {
         telefone,
         documento,
         veiculo,
+        tipoCombustivel,
         rendimentoKmLitro: Number(rendimentoKmLitro),
         unidadeId: precisaSelecionarUnidade ? unidadeId : undefined,
       }),
@@ -103,6 +105,7 @@ export function CadastroEntregador() {
             <input required value={veiculo} onChange={(e) => setVeiculo(e.target.value)} className={inputClass} />
           </Field>
           <Field label="Rendimento (km/L)">
+            <select aria-label="Tipo de combustível" value={tipoCombustivel} onChange={(e) => setTipoCombustivel(e.target.value as 'GASOLINA' | 'DIESEL')} className={`${inputClass} mb-2`}><option value="GASOLINA">Gasolina</option><option value="DIESEL">Diesel</option></select>
             <input
               type="number"
               step="0.1"
@@ -122,13 +125,13 @@ export function CadastroEntregador() {
       </Card>
 
       <Card title="Entregadores cadastrados">
-        {!unidadeConsultada && <p className="text-sm text-slate-500">Selecione uma Unidade para listar.</p>}
+        {!unidadeConsultada && <p className="text-sm text-stone-500">Selecione uma unidade para listar.</p>}
         <ul className="flex flex-col gap-2 text-sm">
           {entregadores.data?.map((entregador) => (
             <li key={entregador.id} className="rounded-md border border-slate-200 px-3 py-2">
               <p className="font-medium text-slate-800">{entregador.nome}</p>
               <p className="text-slate-500">
-                {entregador.veiculo} — {entregador.rendimentoKmLitro} km/L — {entregador.documento}
+                {entregador.veiculo} — {entregador.tipoCombustivel === 'DIESEL' ? 'diesel' : 'gasolina'} — {entregador.rendimentoKmLitro} km/L — {entregador.documento}
               </p>
             </li>
           ))}

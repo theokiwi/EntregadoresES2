@@ -5,6 +5,7 @@ import { registrarPedido } from '../../api/pedidos';
 import { listarUnidades } from '../../api/unidades';
 import { useAuth } from '../../auth/AuthContext';
 import { Card, ErrorText, Field, inputClass, PrimaryButton, SuccessText } from '../../components/ui';
+import { AddressPicker } from '../../components/AddressPicker';
 
 /** UC08 — Registrar pedidos/endereços de entrega: TelaRegistroDePedidos. */
 export function RegistrarPedido() {
@@ -59,7 +60,15 @@ export function RegistrarPedido() {
           </Field>
         )}
         <Field label="Endereço do pedido">
-          <input required value={endereco} onChange={(e) => setEndereco(e.target.value)} className={inputClass} />
+          <AddressPicker
+            required
+            value={endereco}
+            onChange={setEndereco}
+            onCoordinatesChange={({ latitude: lat, longitude: lng }) => {
+              setLatitude(lat.toFixed(6));
+              setLongitude(lng.toFixed(6));
+            }}
+          />
         </Field>
         <p className="text-xs text-slate-500">
           Latitude/longitude só são necessárias se o endereço ainda não existir na base de Pontos.

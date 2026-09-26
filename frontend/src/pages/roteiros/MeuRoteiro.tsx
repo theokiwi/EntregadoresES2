@@ -8,7 +8,7 @@ import {
   registrarSaida,
 } from '../../api/roteiros';
 import type { ItemRoteiro } from '../../api/types';
-import { Card, ErrorText, PrimaryButton } from '../../components/ui';
+import { Card, EmptyState, ErrorText, Icon, PageHeader, PrimaryButton, StatusBadge } from '../../components/ui';
 
 const ROTULO_STATUS: Record<string, string> = {
   PENDENTE: 'Pendente',
@@ -32,19 +32,14 @@ export function MeuRoteiro() {
     iniciarMutation.isPending || finalizarMutation.isPending || chegadaMutation.isPending || saidaMutation.isPending;
 
   if (roteiro.isLoading) {
-    return (
-      <Card title="Meu roteiro do dia">
+    return (<><PageHeader eyebrow="Operação de hoje" title="Minha rota" description="Acompanhe sua sequência de entregas em tempo real." />
+      <Card title="Carregando roteiro">
         <p className="text-sm text-slate-500">Carregando…</p>
-      </Card>
-    );
+      </Card></>);
   }
 
   if (!roteiro.data) {
-    return (
-      <Card title="Meu roteiro do dia">
-        <p className="text-sm text-slate-500">Nenhum roteiro disponível para hoje.</p>
-      </Card>
-    );
+    return (<><PageHeader eyebrow="Operação de hoje" title="Minha rota" description="Acompanhe sua sequência de entregas em tempo real."/><Card><EmptyState icon="route" title="Dia livre por aqui" description="Nenhum roteiro foi planejado para você hoje."/></Card></>);
   }
 
   const r = roteiro.data;
@@ -71,16 +66,24 @@ export function MeuRoteiro() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title="Meu roteiro do dia">
+      <PageHeader eyebrow="Operação de hoje" title="Minha rota" description={`${r.itens.length} pontos planejados para hoje`} />
+      <div className="stats-grid !mb-0">
+        <Card className="stat-card"><span className="stat-icon"><Icon name="pin"/></span><div><p>Pontos</p><strong>{r.itens.filter(i=>i.status==='CONCLUIDO').length}/{r.itens.length}</strong><small>concluídos</small></div></Card>
+        <Card className="stat-card"><span className="stat-icon"><Icon name="clock"/></span><div><p>Tempo parado</p><strong>{r.itens.reduce((s,i)=>s+(i.tempoParadoMin??0),0)} min</strong></div></Card>
+        <Card className="stat-card"><span className="stat-icon"><Icon name="route"/></span><div><p>Status atual</p><StatusBadge tone={r.status==='FINALIZADO'?'success':r.status==='EM_ANDAMENTO'?'warning':'neutral'}>{ROTULO_STATUS[r.status] ?? r.status}</StatusBadge></div></Card>
+      </div>
+      <Card title="Sequência de entregas" subtitle="Siga os pontos na ordem planejada">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-sm font-medium text-slate-700">Status: {ROTULO_STATUS[r.status] ?? r.status}</span>
+          <span className="text-xs text-stone-400">Horário validado pelo servidor · localização GPS obrigatória no ponto</span>
           {r.status === 'NAO_INICIADO' && (
             <PrimaryButton disabled={carregandoAcao} onClick={() => iniciarMutation.mutate(r.id)}>
               Iniciar roteiro
             </PrimaryButton>
           )}
           {r.status === 'EM_ANDAMENTO' && (
-            <PrimaryButton disabled={carregandoAcao} onClick={() => finalizarMutation.mutate(r.id)}>
+            <PrimaryButton disabled={carregandoAcao} onClick={() => {
+              if (window.confirm('Finalizar este roteiro? Depois de finalizado, os registros não poderão ser alterados por aqui.')) finalizarMutation.mutate(r.id);
+            }}>
               Finalizar roteiro
             </PrimaryButton>
           )}
@@ -92,14 +95,14 @@ export function MeuRoteiro() {
           {r.itens.map((item) => (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-slate-200 px-3 py-2 text-sm"
+              className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${item.status==='AGUARDANDO_SAIDA'?'border-red-200 bg-red-50/40':'border-stone-200'}`}
             >
               <div>
                 <p className="font-medium text-slate-800">
                   {item.ordem}. {item.ponto.endereco}
                 </p>
                 <p className="text-slate-500">
-                  {ROTULO_STATUS[item.status]}
+                  {item.ordem===1?'Ponto de partida':ROTULO_STATUS[item.status]}
                   {item.tempoParadoMin !== null && ` — parado ${item.tempoParadoMin} min`}
                 </p>
               </div>

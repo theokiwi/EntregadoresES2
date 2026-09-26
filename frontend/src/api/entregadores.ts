@@ -6,6 +6,7 @@ export interface CriarEntregadorInput {
   telefone: string;
   documento: string;
   veiculo: string;
+  tipoCombustivel: 'GASOLINA' | 'DIESEL';
   rendimentoKmLitro: number;
   email?: string;
   unidadeId?: string;

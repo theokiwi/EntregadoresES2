@@ -63,6 +63,7 @@ export function GerenciarPerfis() {
       <Card title="Buscar usuário">
         <form onSubmit={handleBuscar} className="flex gap-2">
           <input
+            aria-label="Buscar usuário por nome ou e-mail"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Nome ou e-mail"

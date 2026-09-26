@@ -3,6 +3,8 @@ import {
   IsArray,
   IsDateString,
   IsOptional,
+  IsNumber,
+  Min,
   IsString,
 } from 'class-validator';
 
@@ -22,4 +24,9 @@ export class MontarRoteiroDto {
   @IsOptional()
   @IsString()
   unidadeId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  receitaBruta?: number;
 }

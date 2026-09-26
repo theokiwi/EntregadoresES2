@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { consultarAuditoria } from '../../api/auditoria';
-import { Card, Field, inputClass } from '../../components/ui';
+import { Card, EmptyState, ErrorText, Field, inputClass } from '../../components/ui';
+import { mensagemDeErro } from '../../api/error';
 
 /** UC17 — Consultar trilha de auditoria: TelaTrilhaDeAuditoria. */
 export function TrilhaDeAuditoria() {
@@ -32,9 +33,10 @@ export function TrilhaDeAuditoria() {
       </Card>
 
       <Card title="Correções registradas">
-        {auditoria.isLoading && <p className="text-sm text-slate-500">Carregando…</p>}
+        {auditoria.isLoading && <p className="text-sm text-slate-500" role="status">Carregando registros…</p>}
+        {auditoria.isError && <ErrorText>{mensagemDeErro(auditoria.error)}</ErrorText>}
         {auditoria.data?.length === 0 && (
-          <p className="text-sm text-slate-500">Nenhuma correção registrada no período.</p>
+          <EmptyState icon="audit" title="Nenhuma correção encontrada" description="Ajuste o período ou aguarde o registro de novas correções." />
         )}
         <ul className="flex flex-col gap-2">
           {auditoria.data?.map((registro) => (

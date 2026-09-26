@@ -29,6 +29,22 @@ enum ItemRoteiroStatus {
   CONCLUIDO
 }
 
+enum PlanoAssinatura {
+  ESSENCIAL
+  PROFISSIONAL
+  ESCALA
+}
+
+enum StatusAssinatura {
+  ATIVA
+  CANCELADA
+}
+
+enum TipoCombustivel {
+  GASOLINA
+  DIESEL
+}
+
 model Estabelecimento {
   id        String   @id @default(uuid())
   nome      String
@@ -37,8 +53,26 @@ model Estabelecimento {
   unidades  Unidade[]
   usuarios  Usuario[]
   auditoria Auditoria[]
+  assinatura Assinatura?
 
   @@map("estabelecimentos")
+}
+
+model Assinatura {
+  id                String           @id @default(uuid())
+  estabelecimentoId String           @unique
+  plano             PlanoAssinatura
+  status            StatusAssinatura @default(ATIVA)
+  valorMensal       Decimal          @db.Decimal(10, 2)
+  proximaCobranca   DateTime
+  pagamentoMock     Boolean          @default(true)
+  cartaoFinal       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  estabelecimento Estabelecimento @relation(fields: [estabelecimentoId], references: [id])
+
+  @@map("assinaturas")
 }
 
 model Unidade {
@@ -74,6 +108,7 @@ model Usuario {
   // Campos específicos de Entregador (ADR-014: Usuario é tabela única, sem herança física)
   documento         String?
   veiculo           String?
+  tipoCombustivel   TipoCombustivel?
   rendimentoKmLitro Decimal? @db.Decimal(10, 2)
   // UC02/UC06: usuário criado por um Supervisor fica "Convite pendente" até definir a
   // própria senha (senhaHash inicial é um hash aleatório, nunca conhecido por ninguém).
@@ -141,6 +176,7 @@ model Roteiro {
   tempoTotalParadoMin    Int?
   distanciaTotalKm       Decimal?      @db.Decimal(10, 3)
   custoEstimado          Decimal?      @db.Decimal(10, 2)
+  receitaBruta           Decimal?      @db.Decimal(10, 2)
   createdAt              DateTime      @default(now())
 
   unidade    Unidade       @relation(fields: [unidadeId], references: [id])
@@ -148,7 +184,7 @@ model Roteiro {
   itens      ItemRoteiro[]
 
   @@unique([entregadorId, data])
-  @@index([unidadeId])
+  @@index([unidadeId, data])
   @@index([estabelecimentoId])
   @@map("roteiros")
 }
@@ -161,6 +197,14 @@ model ItemRoteiro {
   horaChegada       DateTime?
   horaSaida         DateTime?
   tempoParadoMin    Int?
+  chegadaLatitude       Decimal? @db.Decimal(9, 6)
+  chegadaLongitude      Decimal? @db.Decimal(9, 6)
+  chegadaPrecisaoMetros Decimal? @db.Decimal(8, 2)
+  chegadaCapturadaEm    DateTime?
+  saidaLatitude         Decimal? @db.Decimal(9, 6)
+  saidaLongitude        Decimal? @db.Decimal(9, 6)
+  saidaPrecisaoMetros   Decimal? @db.Decimal(8, 2)
+  saidaCapturadaEm      DateTime?
   status            ItemRoteiroStatus @default(PENDENTE)
   createdAt         DateTime          @default(now())
 
@@ -171,6 +215,22 @@ model ItemRoteiro {
   @@unique([roteiroId, ordem])
   @@index([pontoId])
   @@map("itens_roteiro")
+}
+
+// Nonce de uso único vinculado a uma ação de localização. Impede que uma
+// requisição de registro capturada seja repetida em outro momento ou alvo.
+model DesafioLocalizacao {
+  id         String    @id @default(uuid())
+  usuarioId  String
+  tipo       String
+  alvoId     String
+  expiraEm   DateTime
+  consumidoEm DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([usuarioId, alvoId, tipo])
+  @@index([expiraEm])
+  @@map("desafios_localizacao")
 }
 
 model Auditoria {
